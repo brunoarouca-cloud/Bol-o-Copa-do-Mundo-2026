@@ -2,9 +2,10 @@ import { Timestamp } from "firebase/firestore";
 
 export type GamePhase =
   | "Fase de Grupos"
-  | "Oitavas"
-  | "Quartas"
-  | "Semifinal"
+  | "Oitavas"        // Rodada de 32 (16 jogos)
+  | "Dezesseis"      // Oitavas de Final (8 jogos)
+  | "Quartas"        // Quartas de Final (4 jogos)
+  | "Semifinal"      // Semifinais (2 jogos)
   | "Terceiro Lugar"
   | "Final";
 

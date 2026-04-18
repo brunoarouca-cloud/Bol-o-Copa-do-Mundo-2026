@@ -14,13 +14,14 @@ import type { Game, GamePhase, ScoringSettings } from "@/types";
 const PHASES: GamePhase[] = [
   "Fase de Grupos",
   "Oitavas",
+  "Dezesseis",
   "Quartas",
   "Semifinal",
   "Terceiro Lugar",
   "Final",
 ];
 
-const GROUPS = ["A", "B", "C", "D", "E", "F", "G", "H"];
+const GROUPS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
 
 export default function ApostasPage() {
   const { user } = useAuth();
