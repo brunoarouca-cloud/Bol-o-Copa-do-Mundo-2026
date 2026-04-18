@@ -1,0 +1,70 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return request.auth.token.admin == true;
+    }
+
+    function isOwner(uid) {
+      return request.auth.uid == uid;
+    }
+
+    function gameUnlocked(gameId) {
+      return get(/databases/$(database)/documents/games/$(gameId)).data.status == 'upcoming';
+    }
+
+    match /users/{uid} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid)
+        && !('totalPoints' in request.resource.data.diff(resource.data).affectedKeys())
+        && !('isAdmin' in request.resource.data.diff(resource.data).affectedKeys());
+      allow update, delete: if isAdmin();
+    }
+
+    match /games/{gameId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /bets/{betId} {
+      allow read: if isSignedIn() && isOwner(resource.data.userId);
+      allow create: if isSignedIn()
+        && isOwner(request.resource.data.userId)
+        && gameUnlocked(request.resource.data.gameId);
+      allow update: if isSignedIn()
+        && isOwner(resource.data.userId)
+        && gameUnlocked(resource.data.gameId)
+        && !('points' in request.resource.data.diff(resource.data).affectedKeys());
+      allow delete: if false;
+    }
+
+    match /nominalBets/{betId} {
+      allow read: if isSignedIn() && isOwner(resource.data.userId);
+      allow create, update: if isSignedIn()
+        && isOwner(request.resource.data.userId)
+        && request.time < get(/databases/$(database)/documents/settings/scoring).data.nominalDeadline;
+      allow delete: if false;
+    }
+
+    match /nominalResults/global {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /settings/{doc} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /news/{doc} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}
