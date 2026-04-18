@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { collection, query, orderBy, onSnapshot, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
 import { gameConverter, scoringConverter } from "@/lib/firebase/converters";
@@ -9,7 +9,22 @@ import { useAuth } from "@/hooks/use-auth";
 import { useBets } from "@/hooks/use-bets";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { toZonedTime } from "date-fns-tz";
 import type { Game, GamePhase, ScoringSettings } from "@/types";
+
+const BRT = "America/Sao_Paulo";
+
+function gameDateBRT(game: Game): string {
+  return format(toZonedTime(game.date.toDate(), BRT), "yyyy-MM-dd");
+}
+
+function formatDateLabel(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  return format(dt, "dd/MM (EEE)", { locale: ptBR });
+}
 
 const PHASES: GamePhase[] = [
   "Fase de Grupos",
@@ -33,6 +48,7 @@ export default function ApostasPage() {
 
   const [filterPhase, setFilterPhase] = useState<GamePhase | "Todos">("Fase de Grupos");
   const [filterGroup, setFilterGroup] = useState<string | "Todos">("Todos");
+  const [filterDate, setFilterDate] = useState<string | "Todos">("Todos");
 
   // Carrega jogos em tempo real
   useEffect(() => {
@@ -55,10 +71,20 @@ export default function ApostasPage() {
     });
   }, []);
 
+  // Datas únicas dos jogos da fase selecionada (em BRT)
+  const availableDates = useMemo(() => {
+    const phaseGames = games.filter((g) =>
+      filterPhase === "Todos" || g.phase === filterPhase
+    );
+    const dates = Array.from(new Set(phaseGames.map(gameDateBRT))).sort();
+    return dates;
+  }, [games, filterPhase]);
+
   // Filtra jogos
   const filteredGames = games.filter((g) => {
     if (filterPhase !== "Todos" && g.phase !== filterPhase) return false;
     if (filterGroup !== "Todos" && g.group !== filterGroup) return false;
+    if (filterDate !== "Todos" && gameDateBRT(g) !== filterDate) return false;
     return true;
   });
 
@@ -91,6 +117,7 @@ export default function ApostasPage() {
               onClick={() => {
                 setFilterPhase(phase);
                 setFilterGroup("Todos");
+                setFilterDate("Todos");
               }}
               className="text-xs"
             >
@@ -119,6 +146,31 @@ export default function ApostasPage() {
                 className="text-xs"
               >
                 Grupo {g}
+              </Button>
+            ))}
+          </div>
+        )}
+
+        {/* Filtro por data */}
+        {availableDates.length > 1 && (
+          <div className="flex flex-wrap gap-1 border-t pt-2 w-full">
+            <Button
+              size="sm"
+              variant={filterDate === "Todos" ? "default" : "outline"}
+              onClick={() => setFilterDate("Todos")}
+              className="text-xs"
+            >
+              Todas as datas
+            </Button>
+            {availableDates.map((d) => (
+              <Button
+                key={d}
+                size="sm"
+                variant={filterDate === d ? "default" : "outline"}
+                onClick={() => setFilterDate(d)}
+                className="text-xs"
+              >
+                {formatDateLabel(d)}
               </Button>
             ))}
           </div>

@@ -211,22 +211,23 @@ export function GameCard({
           </div>
         )}
 
-        {/* Footer: local + countdown */}
-        <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <MapPin className="h-3 w-3" aria-hidden="true" />
-            {game.city}
-          </span>
-          <span className="flex items-center gap-1">
-            <Clock className="h-3 w-3" aria-hidden="true" />
-            {game.status === "upcoming" && !countdown.isExpired ? (
+        {/* Footer: local + horário */}
+        <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1 min-w-0">
+            <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
+            <span className="truncate">{game.venue} · {game.city}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1">
+              <Clock className="h-3 w-3" aria-hidden="true" />
+              {formatGameDateShort(game.date)} (BRT)
+            </span>
+            {game.status === "upcoming" && !countdown.isExpired && (
               <span className="text-status-locked font-medium">
                 Trava {countdown.formatted}
               </span>
-            ) : (
-              formatGameDateShort(game.date)
             )}
-          </span>
+          </div>
         </div>
       </CardContent>
     </Card>

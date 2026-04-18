@@ -15,16 +15,23 @@ import {
   LogOut,
   Moon,
   Sun,
+  BookOpen,
+  MessageCircle,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+
+// ← Substitua pelo seu número com DDI+DDD, só dígitos. Ex: "5511998765432"
+const WHATSAPP_NUMBER = "5521996169535";
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=Dúvida%20sobre%20o%20Bolão%20Copa%202026`;
 
 const navLinks = [
   { href: "/apostas", label: "Apostas", icon: Target },
   { href: "/nominais", label: "Nominais", icon: Star },
   { href: "/classificacao", label: "Classificação", icon: BarChart2 },
   { href: "/noticias", label: "Notícias", icon: Newspaper },
+  { href: "/regras", label: "Regras", icon: BookOpen },
 ];
 
 export function Navbar() {
@@ -75,6 +82,18 @@ export function Navbar() {
 
         {/* Ações */}
         <div className="flex items-center gap-2">
+          {/* WhatsApp suporte */}
+          <a
+            href={WHATSAPP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Fale conosco no WhatsApp"
+          >
+            <Button variant="ghost" size="icon" className="text-green-500 hover:text-green-600">
+              <MessageCircle className="h-4 w-4" />
+            </Button>
+          </a>
+
           {/* Dark mode toggle */}
           <Button
             variant="ghost"

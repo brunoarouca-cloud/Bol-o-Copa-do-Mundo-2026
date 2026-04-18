@@ -130,11 +130,14 @@ export function NominalBetCard({
               <SelectValue placeholder={category === "topScorer" ? "Selecione um jogador..." : "Selecione uma seleção..."} />
             </SelectTrigger>
             <SelectContent>
-              {(category === "topScorer" ? TOP_SCORER_CANDIDATES : TEAM_NAMES).map((item) => (
-                <SelectItem key={item} value={item}>
-                  {item}
-                </SelectItem>
-              ))}
+              {(category === "topScorer" ? TOP_SCORER_CANDIDATES : TEAM_NAMES)
+                .slice()
+                .sort((a, b) => a.localeCompare(b, "pt-BR"))
+                .map((item) => (
+                  <SelectItem key={item} value={item}>
+                    {item}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         )}

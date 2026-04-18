@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { auth } from "@/lib/firebase/client";
 import { toast } from "sonner";
 import { formatGameDate } from "@/lib/time";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, Trash2 } from "lucide-react";
 import type { Game } from "@/types";
 
 const STATUS_LABELS = { upcoming: "Aberto", locked: "Travado", finished: "Encerrado" };
@@ -24,6 +24,7 @@ export default function AdminJogosPage() {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [clearingId, setClearingId] = useState<string | null>(null);
   const [results, setResults] = useState<Record<string, { home: string; away: string }>>({});
   const [search, setSearch] = useState("");
 
@@ -93,6 +94,34 @@ export default function AdminJogosPage() {
     }
   }
 
+  async function handleClearResult(game: Game) {
+    if (!confirm(`Remover o placar de ${game.homeTeam} × ${game.awayTeam}? Os pontos deste jogo serão zerados.`)) return;
+
+    setClearingId(game.id);
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      const response = await fetch("/api/admin/clear-result", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ gameId: game.id }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error ?? "Erro desconhecido");
+      }
+
+      toast.success(`Placar de ${game.homeTeam} × ${game.awayTeam} removido.`);
+    } catch (err) {
+      toast.error(`Erro: ${(err as Error).message}`);
+    } finally {
+      setClearingId(null);
+    }
+  }
+
   const filteredGames = games.filter(
     (g) =>
       g.homeTeam.toLowerCase().includes(search.toLowerCase()) ||
@@ -126,6 +155,7 @@ export default function AdminJogosPage() {
           {filteredGames.map((game) => {
             const r = results[game.id];
             const isSaving = savingId === game.id;
+            const isClearing = clearingId === game.id;
 
             return (
               <div
@@ -150,11 +180,26 @@ export default function AdminJogosPage() {
                   </div>
                 </div>
 
-                {/* Resultado atual */}
+                {/* Resultado atual + botão limpar */}
                 {game.homeScore !== null && (
-                  <div className="flex items-center gap-1 text-sm font-bold">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    {game.homeScore} × {game.awayScore}
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 text-sm font-bold">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      {game.homeScore} × {game.awayScore}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => handleClearResult(game)}
+                      disabled={isClearing}
+                      title="Remover placar"
+                    >
+                      {isClearing
+                        ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        : <Trash2 className="h-3.5 w-3.5" />
+                      }
+                    </Button>
                   </div>
                 )}
 
