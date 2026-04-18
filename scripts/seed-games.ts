@@ -9,12 +9,18 @@ import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import GAMES_2026 from "../data/games-2026";
 import { NOMINAL_DEADLINE_UTC } from "../lib/time";
+import { readFileSync, readdirSync } from "fs";
 
-// Inicializa Firebase Admin
+// Inicializa Firebase Admin usando o arquivo serviceAccount JSON local
 if (!getApps().length) {
-  const b64 = process.env.FIREBASE_SERVICE_ACCOUNT_B64;
-  if (!b64) throw new Error("FIREBASE_SERVICE_ACCOUNT_B64 não definido em .env.local");
-  const sa = JSON.parse(Buffer.from(b64, "base64").toString("utf-8"));
+  // Procura qualquer arquivo serviceAccount*.json ou *firebase-adminsdk*.json na pasta raiz
+  const files = readdirSync(".");
+  const saFile = files.find(
+    (f) => f.endsWith(".json") && (f.includes("firebase-adminsdk") || f.startsWith("serviceAccount"))
+  );
+  if (!saFile) throw new Error("Arquivo de service account não encontrado. Baixe em Firebase Console > Configurações > Contas de serviço.");
+  const sa = JSON.parse(readFileSync(saFile, "utf-8"));
+  console.log(`🔑 Usando service account: ${saFile}`);
   initializeApp({ credential: cert(sa) });
 }
 
