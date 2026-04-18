@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { TEAM_NAMES } from "@/data/teams-2026";
+import { TOP_SCORER_CANDIDATES } from "@/data/top-scorers-2026";
 import type { NominalBet, NominalCategory } from "@/types";
 
 interface NominalBetCardProps {
@@ -126,12 +127,12 @@ export function NominalBetCard({
             disabled={saving}
           >
             <SelectTrigger aria-label={`Selecionar ${title}`}>
-              <SelectValue placeholder="Selecione uma seleção..." />
+              <SelectValue placeholder={category === "topScorer" ? "Selecione um jogador..." : "Selecione uma seleção..."} />
             </SelectTrigger>
             <SelectContent>
-              {TEAM_NAMES.map((team) => (
-                <SelectItem key={team} value={team}>
-                  {team}
+              {(category === "topScorer" ? TOP_SCORER_CANDIDATES : TEAM_NAMES).map((item) => (
+                <SelectItem key={item} value={item}>
+                  {item}
                 </SelectItem>
               ))}
             </SelectContent>

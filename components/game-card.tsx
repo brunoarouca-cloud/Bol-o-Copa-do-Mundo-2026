@@ -132,31 +132,45 @@ export function GameCard({
             ) : (
               <>
                 <Input
-                  type="number"
-                  min={0}
-                  max={20}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={2}
                   value={homeInput}
-                  onChange={(e) => setHomeInput(e.target.value)}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, "");
+                    setHomeInput(v);
+                  }}
                   onBlur={handleSave}
-                  onKeyDown={handleKeyDown}
+                  onKeyDown={(e) => {
+                    if (!/[\d\b]/.test(e.key) && !["ArrowLeft","ArrowRight","Tab","Delete","Backspace","Enter"].includes(e.key)) e.preventDefault();
+                    if (e.key === "Enter") handleSave();
+                  }}
                   disabled={isReadOnly || saving}
                   readOnly={isReadOnly}
                   aria-label={`Gols de ${game.homeTeam}`}
-                  className="h-12 w-12 text-center text-lg font-bold"
+                  className="h-12 w-12 text-center text-lg font-bold [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
                 <span className="text-muted-foreground font-bold">×</span>
                 <Input
-                  type="number"
-                  min={0}
-                  max={20}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={2}
                   value={awayInput}
-                  onChange={(e) => setAwayInput(e.target.value)}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, "");
+                    setAwayInput(v);
+                  }}
                   onBlur={handleSave}
-                  onKeyDown={handleKeyDown}
+                  onKeyDown={(e) => {
+                    if (!/[\d\b]/.test(e.key) && !["ArrowLeft","ArrowRight","Tab","Delete","Backspace","Enter"].includes(e.key)) e.preventDefault();
+                    if (e.key === "Enter") handleSave();
+                  }}
                   disabled={isReadOnly || saving}
                   readOnly={isReadOnly}
                   aria-label={`Gols de ${game.awayTeam}`}
-                  className="h-12 w-12 text-center text-lg font-bold"
+                  className="h-12 w-12 text-center text-lg font-bold [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
               </>
             )}
