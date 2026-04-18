@@ -6,9 +6,6 @@
  *   ADMIN_EMAIL=brunoarouca@gmail.com pnpm set-admin
  */
 
-import * as dotenv from "dotenv";
-dotenv.config({ path: ".env.local" });
-
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";

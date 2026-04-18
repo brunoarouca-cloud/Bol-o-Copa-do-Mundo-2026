@@ -5,9 +5,6 @@
  * Idempotente: usa set com merge:true, pode rodar várias vezes sem duplicar dados.
  */
 
-import * as dotenv from "dotenv";
-dotenv.config({ path: ".env.local" });
-
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import GAMES_2026 from "../data/games-2026";

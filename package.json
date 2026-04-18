@@ -9,8 +9,8 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "seed": "tsx scripts/seed-games.ts",
-    "set-admin": "tsx scripts/set-admin-claim.ts"
+    "seed": "node --env-file=.env.local --import tsx scripts/seed-games.ts",
+    "set-admin": "node --env-file=.env.local --import tsx scripts/set-admin-claim.ts"
   },
   "dependencies": {
     "next": "14.2.29",
