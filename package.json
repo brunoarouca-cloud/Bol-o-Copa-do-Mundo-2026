@@ -46,7 +46,7 @@
     "next-themes": "^0.3.0"
   },
   "pnpm": {
-    "allowedBuildScripts": ["esbuild", "protobufjs", "unrs-resolver", "@swc/core"]
+    "onlyBuiltDependencies": ["esbuild", "protobufjs", "unrs-resolver", "@swc/core"]
   },
   "devDependencies": {
     "typescript": "^5.6.3",
