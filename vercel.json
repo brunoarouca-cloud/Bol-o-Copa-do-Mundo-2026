@@ -1,4 +1,5 @@
 {
+  "installCommand": "pnpm install --config.ignore-scripts=false",
   "crons": [
     {
       "path": "/api/generate-news",
