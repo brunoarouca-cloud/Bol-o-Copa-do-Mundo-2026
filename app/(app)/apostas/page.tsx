@@ -189,22 +189,23 @@ export default function ApostasPage() {
     ...availableDates.map((d) => ({ value: d, label: formatDateLabel(d) })),
   ];
 
-  // ─── Limpar apostas abertas ────────────────────────────────────────────────
+  // ─── Limpar apostas filtradas abertas ─────────────────────────────────────
   async function handleClearOpenBets() {
     if (!user?.uid) return;
 
-    const openBets = bets.filter((bet) => {
-      const game = games.find((g) => g.id === bet.gameId);
-      return game?.status === "upcoming";
-    });
+    // Apenas apostas dos jogos visíveis no filtro atual que ainda estão "upcoming"
+    const betsToDelete = filteredGames
+      .filter((g) => g.status === "upcoming")
+      .map((g) => getBetForGame(g.id))
+      .filter((bet): bet is NonNullable<typeof bet> => bet !== undefined);
 
-    if (openBets.length === 0) {
-      toast.info("Não há apostas em jogos ainda abertos.");
+    if (betsToDelete.length === 0) {
+      toast.info("Não há apostas abertas nos jogos selecionados.");
       return;
     }
 
     const confirmed = window.confirm(
-      `Isso vai apagar ${openBets.length} aposta(s) em jogos ainda abertos.\n\n` +
+      `Isso vai apagar ${betsToDelete.length} aposta(s) nos jogos visíveis que ainda estão abertos.\n\n` +
         "Apostas em jogos travados ou encerrados NÃO serão afetadas.\n\n" +
         "Esta ação não pode ser desfeita. Deseja continuar?"
     );
@@ -216,7 +217,10 @@ export default function ApostasPage() {
       const res = await fetch("/api/bets/clear-open", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ userId: user.uid }),
+        body: JSON.stringify({
+          userId: user.uid,
+          betIds: betsToDelete.map((b) => b.id),
+        }),
       });
       if (!res.ok) {
         const err = await res.json();

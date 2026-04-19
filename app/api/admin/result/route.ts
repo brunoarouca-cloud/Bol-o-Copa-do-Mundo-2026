@@ -3,6 +3,7 @@ import { getAdminFirestore, getAdminAuth } from "@/lib/firebase/admin";
 import { resultSchema } from "@/lib/zod-schemas";
 import { calculatePoints } from "@/lib/scoring";
 import type { ScoringSettings } from "@/types";
+import type { QueryDocumentSnapshot } from "firebase-admin/firestore";
 
 /**
  * POST /api/admin/result
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
       const settings = settingsSnap.data() as ScoringSettings;
 
       const PAGE_SIZE = 300;
-      let lastDoc: FirebaseFirestore.QueryDocumentSnapshot | null = null;
+      let lastDoc: QueryDocumentSnapshot | null = null;
       let totalProcessed = 0;
       const userDeltas = new Map<string, { pointsDelta: number; exactHitsDelta: number }>();
 
