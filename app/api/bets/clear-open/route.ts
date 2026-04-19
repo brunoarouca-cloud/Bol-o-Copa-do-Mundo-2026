@@ -65,7 +65,8 @@ export async function POST(request: NextRequest) {
       message: `${deleted} aposta(s) removida(s) com sucesso`,
     });
   } catch (error) {
-    console.error("[bets/clear-open] Erro:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("[bets/clear-open] Erro:", msg);
+    return NextResponse.json({ error: `Erro interno: ${msg}` }, { status: 500 });
   }
 }

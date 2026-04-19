@@ -136,7 +136,8 @@ export async function POST(request: NextRequest) {
       });
     }
   } catch (error) {
-    console.error("[admin/result] Erro:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("[admin/result] Erro:", msg);
+    return NextResponse.json({ error: `Erro interno: ${msg}` }, { status: 500 });
   }
 }
