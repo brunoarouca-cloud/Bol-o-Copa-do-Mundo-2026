@@ -1,7 +1,7 @@
 /**
  * Calendário da Copa do Mundo FIFA 2026
  * 104 jogos — 11/jun a 19/jul/2026
- * Sedes: EUA (60 jogos), Canadá (13), México (10)
+ * Sedes: EUA (81 jogos), Canadá (13), México (10)
  *
  * Grupos reais (sorteio FIFA):
  *   A: México, África do Sul, Coreia do Sul, República Tcheca
@@ -138,8 +138,8 @@ export const GAMES_2026: GameSeed[] = [
   { id: "GS44", matchNumber: 44, phase: "Fase de Grupos", group: "J", homeTeam: "Argélia",         awayTeam: "Jordânia",            homeFlag: "🇩🇿", awayFlag: "🇯🇴", dateUTC: "2026-06-23T23:00:00Z", venue: "Mercedes-Benz Stadium",   city: "Atlanta",          country: "EUA" },
 
   // GRUPO K
-  { id: "GS45", matchNumber: 45, phase: "Fase de Grupos", group: "K", homeTeam: "Portugal",        awayTeam: "Colômbia",            homeFlag: "🇵🇹", awayFlag: "🇨🇴", dateUTC: "2026-06-24T20:00:00Z", venue: "Estadio Azteca",           city: "Cidade do México", country: "México" },
-  { id: "GS46", matchNumber: 46, phase: "Fase de Grupos", group: "K", homeTeam: "Uzbequistão",     awayTeam: "Rep. Dem. do Congo",  homeFlag: "🇺🇿", awayFlag: "🇨🇩", dateUTC: "2026-06-24T23:00:00Z", venue: "Stade Saputo",             city: "Montreal",         country: "Canadá" },
+  { id: "GS45", matchNumber: 45, phase: "Fase de Grupos", group: "K", homeTeam: "Portugal",        awayTeam: "Colômbia",            homeFlag: "🇵🇹", awayFlag: "🇨🇴", dateUTC: "2026-06-24T20:00:00Z", venue: "AT&T Stadium",             city: "Dallas",           country: "EUA" },
+  { id: "GS46", matchNumber: 46, phase: "Fase de Grupos", group: "K", homeTeam: "Uzbequistão",     awayTeam: "Rep. Dem. do Congo",  homeFlag: "🇺🇿", awayFlag: "🇨🇩", dateUTC: "2026-06-24T23:00:00Z", venue: "Levi's Stadium",           city: "São Francisco",    country: "EUA" },
 
   // GRUPO L
   { id: "GS47", matchNumber: 47, phase: "Fase de Grupos", group: "L", homeTeam: "Inglaterra",      awayTeam: "Gana",                homeFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", awayFlag: "🇬🇭", dateUTC: "2026-06-25T20:00:00Z", venue: "Levi's Stadium",           city: "São Francisco",    country: "EUA" },
@@ -190,8 +190,8 @@ export const GAMES_2026: GameSeed[] = [
   { id: "GS68", matchNumber: 68, phase: "Fase de Grupos", group: "J", homeTeam: "Argélia",         awayTeam: "Áustria",             homeFlag: "🇩🇿", awayFlag: "🇦🇹", dateUTC: "2026-06-28T20:00:00Z", venue: "Mercedes-Benz Stadium",   city: "Atlanta",          country: "EUA" },
 
   // GRUPO K (simultâneos)
-  { id: "GS69", matchNumber: 69, phase: "Fase de Grupos", group: "K", homeTeam: "Portugal",        awayTeam: "Rep. Dem. do Congo",  homeFlag: "🇵🇹", awayFlag: "🇨🇩", dateUTC: "2026-06-29T20:00:00Z", venue: "Estadio Azteca",           city: "Cidade do México", country: "México" },
-  { id: "GS70", matchNumber: 70, phase: "Fase de Grupos", group: "K", homeTeam: "Colômbia",        awayTeam: "Uzbequistão",         homeFlag: "🇨🇴", awayFlag: "🇺🇿", dateUTC: "2026-06-29T20:00:00Z", venue: "Stade Saputo",             city: "Montreal",         country: "Canadá" },
+  { id: "GS69", matchNumber: 69, phase: "Fase de Grupos", group: "K", homeTeam: "Portugal",        awayTeam: "Rep. Dem. do Congo",  homeFlag: "🇵🇹", awayFlag: "🇨🇩", dateUTC: "2026-06-29T20:00:00Z", venue: "Estadio BBVA",             city: "Monterrey",        country: "México" },
+  { id: "GS70", matchNumber: 70, phase: "Fase de Grupos", group: "K", homeTeam: "Colômbia",        awayTeam: "Uzbequistão",         homeFlag: "🇨🇴", awayFlag: "🇺🇿", dateUTC: "2026-06-29T20:00:00Z", venue: "Lincoln Financial Field",  city: "Filadélfia",       country: "EUA" },
 
   // GRUPO L (simultâneos)
   { id: "GS71", matchNumber: 71, phase: "Fase de Grupos", group: "L", homeTeam: "Inglaterra",      awayTeam: "Panamá",              homeFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", awayFlag: "🇵🇦", dateUTC: "2026-06-30T20:00:00Z", venue: "Lumen Field",              city: "Seattle",          country: "EUA" },

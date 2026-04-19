@@ -137,7 +137,7 @@ export default function NominaisPage() {
           <div>
             <p className="font-semibold">Apostas nominais encerradas</p>
             <p className="text-sm opacity-80">
-              O prazo de 12/06/2026 às 23:59 (BRT) expirou.
+              O prazo de 10/06/2026 às 23:59 (BRT) expirou.
             </p>
           </div>
         ) : (
@@ -145,7 +145,7 @@ export default function NominaisPage() {
             <p className="font-semibold">Prazo para apostas nominais</p>
             <p className="text-sm opacity-80">
               Fecha em: <span className="font-bold">{countdown.formatted}</span>
-              {" "}(12/06/2026 às 23:59 BRT)
+              {" "}(10/06/2026 às 23:59 BRT)
             </p>
           </div>
         )}

@@ -143,7 +143,7 @@ export default function RegrasPage() {
             <span className="font-bold text-primary">+{s.nominalBet} pontos</span>.
           </p>
           <p className="text-muted-foreground text-xs">
-            O prazo para as apostas nominais é até <strong>12/06/2026 às 23:59 (BRT)</strong>,
+            O prazo para as apostas nominais é até <strong>10/06/2026 às 23:59 (BRT)</strong>,
             antes do início da Copa. Após este horário as apostas ficam travadas.
           </p>
         </CardContent>

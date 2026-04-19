@@ -23,7 +23,7 @@ export default function ClassificacaoPage() {
       <div>
         <h1 className="text-2xl font-bold">Classificação</h1>
         <p className="text-muted-foreground text-sm">
-          Ranking em tempo real · Desempate por placares exatos
+          Ranking em tempo real · Todos os participantes · Desempate por placares exatos
         </p>
       </div>
 

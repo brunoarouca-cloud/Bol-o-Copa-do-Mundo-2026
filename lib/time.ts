@@ -73,6 +73,6 @@ export function formatDate(timestamp: Timestamp): string {
 }
 
 /**
- * Deadline das apostas nominais: 12/06/2026 23:59 BRT
+ * Deadline das apostas nominais: 10/06/2026 23:59 BRT
  */
-export const NOMINAL_DEADLINE_UTC = brtToUTC("2026-06-12", "23:59");
+export const NOMINAL_DEADLINE_UTC = brtToUTC("2026-06-10", "23:59");

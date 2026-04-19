@@ -39,6 +39,7 @@ export interface UserDoc {
   exactHits: number; // desempate
   rank: number; // calculado
   isAdmin: boolean; // espelha custom claim para UI
+  hasPaid?: boolean;
 }
 
 export interface Bet {
@@ -83,7 +84,7 @@ export interface ScoringSettings {
   oneTeamScore: number; // 5
   correctDraw: number; // 13
   nominalBet: number; // 50
-  nominalDeadline: Timestamp; // 12/06/2026 23:59 BRT em UTC
+  nominalDeadline: Timestamp; // 10/06/2026 23:59 BRT em UTC
   lockMinutesBefore: number; // 5
 }
 
