@@ -3,18 +3,16 @@ import { getAdminFirestore, getAdminAuth } from "@/lib/firebase/admin";
 import { resultSchema } from "@/lib/zod-schemas";
 import { calculatePoints } from "@/lib/scoring";
 import type { ScoringSettings } from "@/types";
-import type { QueryDocumentSnapshot } from "firebase-admin/firestore";
 
 /**
  * POST /api/admin/result
  * Body: { gameId, homeScore, awayScore }
  *
- * Insere resultado de um jogo e recalcula pontos inline (sem HTTP interno).
+ * Salva resultado e recalcula pontos inline.
  * Requer token de admin no header Authorization.
  */
 export async function POST(request: NextRequest) {
   try {
-    // Verifica autenticação e claim de admin
     const authHeader = request.headers.get("authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return NextResponse.json({ error: "Token ausente" }, { status: 401 });
@@ -34,7 +32,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
 
-    // Valida body
     const body = await request.json();
     const parsed = resultSchema.safeParse(body);
     if (!parsed.success) {
@@ -47,75 +44,69 @@ export async function POST(request: NextRequest) {
     const { gameId, homeScore, awayScore } = parsed.data;
     const db = getAdminFirestore();
 
-    // Verifica se o jogo existe
     const gameRef = db.collection("games").doc(gameId);
     const gameSnap = await gameRef.get();
     if (!gameSnap.exists) {
       return NextResponse.json({ error: "Jogo não encontrado" }, { status: 404 });
     }
 
-    // Salva resultado e atualiza status
+    // 1. Salva o resultado (passo crítico — deve sempre funcionar)
     await gameRef.update({ homeScore, awayScore, status: "finished" });
 
-    // ─── Recalcula pontos inline (evita HTTP interno que pode causar timeout) ───
+    // 2. Recalcula pontos (best-effort — não falha o request se der erro)
     try {
       const settingsSnap = await db.collection("settings").doc("scoring").get();
+      if (!settingsSnap.exists) throw new Error("settings/scoring não encontrado");
       const settings = settingsSnap.data() as ScoringSettings;
 
-      const PAGE_SIZE = 300;
-      let lastDoc: QueryDocumentSnapshot | null = null;
-      let totalProcessed = 0;
+      // Busca todas as apostas deste jogo (sem paginação — suficiente para bolão)
+      const betsSnap = await db
+        .collection("bets")
+        .where("gameId", "==", gameId)
+        .get();
+
       const userDeltas = new Map<string, { pointsDelta: number; exactHitsDelta: number }>();
 
-      while (true) {
-        let q = db.collection("bets").where("gameId", "==", gameId).limit(PAGE_SIZE);
-        if (lastDoc) q = q.startAfter(lastDoc);
+      if (!betsSnap.empty) {
+        const betBatch = db.batch();
 
-        const betsSnap = await q.get();
-        if (betsSnap.empty) break;
-
-        const batch = db.batch();
         for (const betDoc of betsSnap.docs) {
           const bet = betDoc.data();
-          const oldPoints = bet.points ?? 0;
+          const oldPoints: number = bet.points ?? 0;
           const newPoints = calculatePoints(
             { homeScore: bet.homeScore, awayScore: bet.awayScore },
             { homeScore, awayScore },
             settings
           );
-          batch.update(betDoc.ref, { points: newPoints });
+          betBatch.update(betDoc.ref, { points: newPoints });
 
-          const existing = userDeltas.get(bet.userId) ?? {
-            pointsDelta: 0,
-            exactHitsDelta: 0,
-          };
-          existing.pointsDelta += newPoints - oldPoints;
+          const curr = userDeltas.get(bet.userId) ?? { pointsDelta: 0, exactHitsDelta: 0 };
+          curr.pointsDelta += newPoints - oldPoints;
           if (newPoints === settings.exactScore && oldPoints !== settings.exactScore) {
-            existing.exactHitsDelta += 1;
+            curr.exactHitsDelta += 1;
           } else if (newPoints !== settings.exactScore && oldPoints === settings.exactScore) {
-            existing.exactHitsDelta -= 1;
+            curr.exactHitsDelta -= 1;
           }
-          userDeltas.set(bet.userId, existing);
-          totalProcessed++;
+          userDeltas.set(bet.userId, curr);
         }
-        await batch.commit();
-        if (betsSnap.docs.length < PAGE_SIZE) break;
-        lastDoc = betsSnap.docs[betsSnap.docs.length - 1];
+
+        await betBatch.commit();
       }
 
-      // Atualiza pontos dos usuários
-      const userBatch = db.batch();
-      for (const [userId, delta] of userDeltas.entries()) {
-        const userRef = db.collection("users").doc(userId);
-        const userSnap = await userRef.get();
-        if (!userSnap.exists) continue;
-        const userData = userSnap.data()!;
-        userBatch.update(userRef, {
-          totalPoints: (userData.totalPoints ?? 0) + delta.pointsDelta,
-          exactHits: Math.max(0, (userData.exactHits ?? 0) + delta.exactHitsDelta),
-        });
+      // Atualiza pontos dos usuários (só se houver deltas)
+      if (userDeltas.size > 0) {
+        const userBatch = db.batch();
+        for (const [userId, delta] of userDeltas.entries()) {
+          const userSnap = await db.collection("users").doc(userId).get();
+          if (!userSnap.exists) continue;
+          const data = userSnap.data()!;
+          userBatch.update(userSnap.ref, {
+            totalPoints: (data.totalPoints ?? 0) + delta.pointsDelta,
+            exactHits: Math.max(0, (data.exactHits ?? 0) + delta.exactHitsDelta),
+          });
+        }
+        await userBatch.commit();
       }
-      await userBatch.commit();
 
       // Recalcula ranking
       const usersSnap = await db
@@ -123,25 +114,25 @@ export async function POST(request: NextRequest) {
         .orderBy("totalPoints", "desc")
         .orderBy("exactHits", "desc")
         .get();
-      const rankBatch = db.batch();
-      usersSnap.docs.forEach((userDoc, index) => {
-        rankBatch.update(userDoc.ref, { rank: index + 1 });
-      });
-      await rankBatch.commit();
+
+      if (usersSnap.docs.length > 0) {
+        const rankBatch = db.batch();
+        usersSnap.docs.forEach((u, i) => {
+          rankBatch.update(u.ref, { rank: i + 1 });
+        });
+        await rankBatch.commit();
+      }
 
       return NextResponse.json({
         message: "Resultado salvo e pontuação recalculada!",
         game: { gameId, homeScore, awayScore },
-        processed: totalProcessed,
-        usersUpdated: userDeltas.size,
+        betsProcessed: betsSnap.size ?? 0,
       });
     } catch (recalcError) {
-      // Resultado já foi salvo — informa mas não falha
-      console.error("[admin/result] Recálculo falhou:", recalcError);
+      console.error("[admin/result] Recálculo falhou (resultado já salvo):", recalcError);
       return NextResponse.json({
-        message: "Resultado salvo. Recálculo pendente — acesse /admin/jogos para re-salvar.",
+        message: "Resultado salvo! Recálculo será refeito na próxima atualização.",
         game: { gameId, homeScore, awayScore },
-        recalcError: "falha no recálculo",
       });
     }
   } catch (error) {

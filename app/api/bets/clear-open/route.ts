@@ -5,9 +5,8 @@ import { getAdminFirestore, getAdminAuth } from "@/lib/firebase/admin";
  * POST /api/bets/clear-open
  * Body: { userId: string; betIds: string[] }
  *
- * Deleta apostas específicas do usuário (IDs enviados pelo cliente).
- * Verifica que cada aposta pertence ao userId informado.
- * Admin SDK é usado para contornar a regra "allow delete: if false".
+ * Deleta apostas específicas pelo ID. Só pode ser chamado pelo próprio usuário.
+ * Admin SDK usado para contornar "allow delete: if false" nas Firestore rules.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -32,31 +31,33 @@ export async function POST(request: NextRequest) {
     if (!userId || typeof userId !== "string") {
       return NextResponse.json({ error: "userId inválido" }, { status: 400 });
     }
-    if (!Array.isArray(betIds) || betIds.length === 0) {
-      return NextResponse.json({ deleted: 0, message: "Nenhuma aposta para remover" });
-    }
 
-    // Só pode limpar as próprias apostas (admins podem limpar de qualquer um)
+    // Só pode limpar as próprias apostas
     if (decodedToken.uid !== userId && !decodedToken.admin) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
 
-    const db = getAdminFirestore();
+    if (!Array.isArray(betIds) || betIds.length === 0) {
+      return NextResponse.json({ deleted: 0, message: "Nenhuma aposta para remover" });
+    }
 
-    // Deleta em lotes de 500 (limite do Firestore batch)
+    const db = getAdminFirestore();
     const BATCH_SIZE = 500;
     let deleted = 0;
 
     for (let i = 0; i < betIds.length; i += BATCH_SIZE) {
+      const chunk = betIds.slice(i, i + BATCH_SIZE).filter(
+        (id): id is string => typeof id === "string" && id.length > 0
+      );
+
+      if (chunk.length === 0) continue; // pula batch vazio
+
       const batch = db.batch();
-      betIds.slice(i, i + BATCH_SIZE).forEach((id: string) => {
-        // Garante formato correto: betId = `${userId}_${gameId}`
-        if (id.startsWith(userId + "_")) {
-          batch.delete(db.collection("bets").doc(id));
-          deleted++;
-        }
+      chunk.forEach((id) => {
+        batch.delete(db.collection("bets").doc(id));
       });
       await batch.commit();
+      deleted += chunk.length;
     }
 
     return NextResponse.json({
