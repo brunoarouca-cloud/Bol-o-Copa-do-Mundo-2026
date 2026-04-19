@@ -212,7 +212,7 @@ export default function AdminJogosPage() {
                     value={r?.home ?? (game.homeScore !== null ? String(game.homeScore) : "")}
                     onChange={(e) => handleInputChange(game.id, "home", e.target.value)}
                     aria-label={`Gols de ${game.homeTeam}`}
-                    className="h-8 w-14 text-center text-sm"
+                    className="h-8 w-14 text-center text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     placeholder="0"
                   />
                   <span className="text-muted-foreground font-bold">×</span>
@@ -223,7 +223,7 @@ export default function AdminJogosPage() {
                     value={r?.away ?? (game.awayScore !== null ? String(game.awayScore) : "")}
                     onChange={(e) => handleInputChange(game.id, "away", e.target.value)}
                     aria-label={`Gols de ${game.awayTeam}`}
-                    className="h-8 w-14 text-center text-sm"
+                    className="h-8 w-14 text-center text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     placeholder="0"
                   />
                   <Button

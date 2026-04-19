@@ -185,6 +185,65 @@ export default function RegrasPage() {
         </CardContent>
       </Card>
 
+      {/* Premiação */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            💰 Quadro de Premiação
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <p className="text-muted-foreground text-xs">
+            O valor do prêmio é calculado sobre o total arrecadado com as inscrições dos participantes.
+          </p>
+          <div className="grid grid-cols-[auto_1fr_auto] gap-x-4 gap-y-3 items-center">
+            {/* 1º lugar */}
+            <div className="text-2xl">🥇</div>
+            <div>
+              <p className="font-semibold">1º lugar</p>
+              <p className="text-muted-foreground text-xs">Maior pontuação geral</p>
+            </div>
+            <div className="text-right">
+              <span className="font-bold text-primary text-lg">70%</span>
+              <p className="text-muted-foreground text-xs">do total</p>
+            </div>
+
+            {/* 2º lugar */}
+            <div className="text-2xl">🥈</div>
+            <div>
+              <p className="font-semibold">2º lugar</p>
+              <p className="text-muted-foreground text-xs">Segunda maior pontuação</p>
+            </div>
+            <div className="text-right">
+              <span className="font-bold text-primary text-lg">20%</span>
+              <p className="text-muted-foreground text-xs">do total</p>
+            </div>
+
+            {/* 3º lugar */}
+            <div className="text-2xl">🥉</div>
+            <div>
+              <p className="font-semibold">3º lugar</p>
+              <p className="text-muted-foreground text-xs">Terceira maior pontuação</p>
+            </div>
+            <div className="text-right">
+              <span className="font-bold text-primary text-lg">10%</span>
+              <p className="text-muted-foreground text-xs">do total</p>
+            </div>
+          </div>
+
+          <div className="rounded-md bg-muted/50 border border-dashed p-3 mt-2 space-y-1 text-xs text-muted-foreground">
+            <p>
+              <strong>Exemplo:</strong> com 20 participantes pagando R$ 50 cada, o total arrecadado
+              é R$ 1.000. Os prêmios serão:{" "}
+              <strong>R$ 700 (1º)</strong>, <strong>R$ 200 (2º)</strong> e <strong>R$ 100 (3º)</strong>.
+            </p>
+            <p>
+              Em caso de empate na pontuação, aplica-se o critério de desempate descrito acima.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Dúvidas */}
       <p className="text-center text-xs text-muted-foreground pb-4">
         Dúvidas? Use o botão do WhatsApp no menu superior para falar com o organizador.

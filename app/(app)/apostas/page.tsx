@@ -1,17 +1,26 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { collection, query, orderBy, onSnapshot, doc, getDoc } from "firebase/firestore";
+import { useState, useEffect, useMemo, useRef } from "react";
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  doc,
+  getDoc,
+  writeBatch,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
 import { gameConverter, scoringConverter } from "@/lib/firebase/converters";
 import { GameCard } from "@/components/game-card";
 import { useAuth } from "@/hooks/use-auth";
 import { useBets } from "@/hooks/use-bets";
 import { Button } from "@/components/ui/button";
-import { Loader2, ChevronDown, Share2 } from "lucide-react";
+import { Loader2, ChevronDown, FileDown, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toZonedTime } from "date-fns-tz";
+import { toast } from "sonner";
 import type { Game, GamePhase, ScoringSettings } from "@/types";
 
 const BRT = "America/Sao_Paulo";
@@ -22,14 +31,7 @@ function gameDateBRT(game: Game): string {
 
 function formatDateLabel(dateStr: string): string {
   const [y, m, d] = dateStr.split("-").map(Number);
-  const dt = new Date(y, m - 1, d);
-  return format(dt, "dd/MM (EEE)", { locale: ptBR });
-}
-
-function formatDateFull(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const dt = new Date(y, m - 1, d);
-  return format(dt, "EEEE, dd 'de' MMMM", { locale: ptBR });
+  return format(new Date(y, m - 1, d), "dd/MM (EEE)", { locale: ptBR });
 }
 
 const PHASES: GamePhase[] = [
@@ -74,7 +76,6 @@ function FilterPill({ label, value, options, onChange, disabled }: FilterPillPro
   }, [open]);
 
   const selectedLabel = options.find((o) => o.value === value)?.label ?? value;
-
   if (disabled) return null;
 
   return (
@@ -88,10 +89,11 @@ function FilterPill({ label, value, options, onChange, disabled }: FilterPillPro
         <span className="text-muted-foreground">{label}:</span>
         <span className="font-semibold max-w-[120px] truncate">{selectedLabel}</span>
         <ChevronDown
-          className={`h-3 w-3 text-muted-foreground shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`h-3 w-3 text-muted-foreground shrink-0 transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
         />
       </Button>
-
       {open && (
         <div className="absolute left-0 top-full mt-1 z-50 bg-background border rounded-lg shadow-lg py-1 min-w-[180px]">
           {options.map((opt) => (
@@ -114,235 +116,6 @@ function FilterPill({ label, value, options, onChange, disabled }: FilterPillPro
   );
 }
 
-// ─── PDF Share ─────────────────────────────────────────────────────────────────
-function generatePDFHTML(
-  games: Game[],
-  getBet: (gameId: string) => { homeScore: number; awayScore: number; points: number | null } | undefined,
-  userName: string,
-  filterPhase: string,
-  filterGroup: string,
-  filterDate: string
-): string {
-  const rows = games.map((g) => {
-    const bet = getBet(g.id);
-    const hasBet = bet !== undefined;
-    const dateBRT = format(
-      toZonedTime(g.date.toDate(), BRT),
-      "dd/MM HH:mm",
-      { locale: ptBR }
-    );
-    const statusLabel =
-      g.status === "finished" ? "Encerrado" : g.status === "locked" ? "Travado" : "Aberto";
-    const pointsHtml =
-      g.status === "finished" && bet?.points !== null
-        ? `<span class="pts ${(bet?.points ?? 0) >= 20 ? "exact" : (bet?.points ?? 0) > 0 ? "hit" : "miss"}">+${bet?.points}pts</span>`
-        : `<span class="pts pending">-</span>`;
-
-    return `
-      <tr>
-        <td class="game-cell">
-          <span class="home">${g.homeFlag ?? ""} ${g.homeTeam}</span>
-          <span class="vs">×</span>
-          <span class="away">${g.awayTeam} ${g.awayFlag ?? ""}</span>
-          <div class="sub">${g.phase}${g.group ? ` · Grupo ${g.group}` : ""} · ${dateBRT} (BRT)</div>
-        </td>
-        <td class="bet-cell">
-          ${
-            hasBet
-              ? `<span class="score">${bet!.homeScore} × ${bet!.awayScore}</span>`
-              : `<span class="no-bet">Sem aposta</span>`
-          }
-        </td>
-        <td class="result-cell">
-          ${
-            g.status === "finished"
-              ? `<span class="score">${g.homeScore} × ${g.awayScore}</span>`
-              : `<span class="pending-label">${statusLabel}</span>`
-          }
-        </td>
-        <td class="pts-cell">${pointsHtml}</td>
-      </tr>
-    `;
-  }).join("");
-
-  const filterDesc = [
-    filterPhase !== "Todos" ? `Fase: ${filterPhase}` : null,
-    filterGroup !== "Todos" ? `Grupo: ${filterGroup}` : null,
-    filterDate !== "Todos" ? `Data: ${formatDateFull(filterDate)}` : null,
-  ].filter(Boolean).join(" · ") || "Todos os jogos";
-
-  const totalPts = games.reduce((sum, g) => {
-    const b = getBet(g.id);
-    return sum + (b?.points ?? 0);
-  }, 0);
-
-  return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <title>Bolão Copa 2026 – Apostas de ${userName}</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f8fafc;
-      color: #1e293b;
-      padding: 24px;
-    }
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
-      border-bottom: 3px solid #16a34a;
-    }
-    .title-block h1 {
-      font-size: 22px;
-      font-weight: 800;
-      color: #16a34a;
-    }
-    .title-block p {
-      font-size: 12px;
-      color: #64748b;
-      margin-top: 2px;
-    }
-    .trophy { font-size: 40px; }
-    .meta {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-    }
-    .chip {
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      border-radius: 999px;
-      padding: 4px 12px;
-      font-size: 12px;
-      color: #475569;
-    }
-    .chip strong { color: #1e293b; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
-    thead tr { background: #16a34a; color: white; }
-    thead th {
-      padding: 10px 12px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      text-align: left;
-    }
-    tbody tr { border-bottom: 1px solid #f1f5f9; }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:nth-child(even) { background: #f8fafc; }
-    td { padding: 10px 12px; vertical-align: middle; }
-    .game-cell { max-width: 280px; }
-    .home, .away { font-weight: 600; font-size: 13px; }
-    .vs { color: #94a3b8; margin: 0 4px; }
-    .sub { font-size: 10px; color: #94a3b8; margin-top: 2px; }
-    .bet-cell, .result-cell { text-align: center; }
-    .score {
-      display: inline-block;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      border-radius: 6px;
-      padding: 2px 10px;
-      font-size: 13px;
-      font-weight: 700;
-      color: #166534;
-    }
-    .no-bet {
-      font-size: 11px;
-      color: #cbd5e1;
-      font-style: italic;
-    }
-    .pending-label {
-      font-size: 11px;
-      color: #94a3b8;
-    }
-    .pts-cell { text-align: center; }
-    .pts {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-    .pts.exact { background: #fef9c3; color: #713f12; border: 1px solid #fde68a; }
-    .pts.hit { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-    .pts.miss { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-    .pts.pending { color: #cbd5e1; }
-    .footer {
-      margin-top: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 12px;
-      border-top: 1px solid #e2e8f0;
-      font-size: 11px;
-      color: #94a3b8;
-    }
-    .total-pts {
-      font-size: 16px;
-      font-weight: 800;
-      color: #16a34a;
-    }
-    @media print {
-      body { background: white; padding: 12px; }
-      .no-print { display: none; }
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <div class="title-block">
-      <h1>⚽ Bolão Copa do Mundo 2026</h1>
-      <p>Apostas de <strong>${userName}</strong> · ${filterDesc}</p>
-    </div>
-    <span class="trophy">🏆</span>
-  </div>
-
-  <div class="meta">
-    <span class="chip">Participante: <strong>${userName}</strong></span>
-    <span class="chip">Filtro: <strong>${filterDesc}</strong></span>
-    <span class="chip">Total de jogos: <strong>${games.length}</strong></span>
-    <span class="chip">Pontos neste filtro: <strong>${totalPts}pts</strong></span>
-  </div>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Jogo</th>
-        <th style="text-align:center">Meu Palpite</th>
-        <th style="text-align:center">Resultado</th>
-        <th style="text-align:center">Pts</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${rows}
-    </tbody>
-  </table>
-
-  <div class="footer">
-    <span>Gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</span>
-    <span class="total-pts">Total: ${totalPts} pts</span>
-  </div>
-
-  <script>
-    window.onload = function() { window.print(); };
-  </script>
-</body>
-</html>`;
-}
-
 // ─── Page ──────────────────────────────────────────────────────────────────────
 export default function ApostasPage() {
   const { user, userDoc } = useAuth();
@@ -351,12 +124,13 @@ export default function ApostasPage() {
   const [games, setGames] = useState<Game[]>([]);
   const [settings, setSettings] = useState<ScoringSettings | null>(null);
   const [gamesLoading, setGamesLoading] = useState(true);
+  const [clearingBets, setClearingBets] = useState(false);
+  const [sharingPdf, setSharingPdf] = useState(false);
 
   const [filterPhase, setFilterPhase] = useState<GamePhase | "Todos">("Fase de Grupos");
   const [filterGroup, setFilterGroup] = useState<string>("Todos");
   const [filterDate, setFilterDate] = useState<string>("Todos");
 
-  // Carrega jogos em tempo real
   useEffect(() => {
     const q = query(
       collection(db, "games").withConverter(gameConverter),
@@ -368,7 +142,6 @@ export default function ApostasPage() {
     });
   }, []);
 
-  // Carrega configurações de pontuação
   useEffect(() => {
     const settingsRef = doc(db, "settings", "scoring").withConverter(scoringConverter);
     getDoc(settingsRef).then((snap) => {
@@ -376,23 +149,19 @@ export default function ApostasPage() {
     });
   }, []);
 
-  // Datas únicas dos jogos da fase selecionada (em BRT)
   const availableDates = useMemo(() => {
-    const phaseGames = games.filter((g) =>
-      filterPhase === "Todos" || g.phase === filterPhase
+    const phaseGames = games.filter(
+      (g) => filterPhase === "Todos" || g.phase === filterPhase
     );
-    const dates = Array.from(new Set(phaseGames.map(gameDateBRT))).sort();
-    return dates;
+    return Array.from(new Set(phaseGames.map(gameDateBRT))).sort();
   }, [games, filterPhase]);
 
-  // Quando muda a fase, reseta grupo e data
   function handlePhaseChange(phase: string) {
     setFilterPhase(phase as GamePhase | "Todos");
     setFilterGroup("Todos");
     setFilterDate("Todos");
   }
 
-  // Filtra jogos
   const filteredGames = useMemo(
     () =>
       games.filter((g) => {
@@ -405,69 +174,228 @@ export default function ApostasPage() {
   );
 
   const loading = gamesLoading || betsLoading;
+  const showGroupFilter = filterPhase === "Fase de Grupos" || filterPhase === "Todos";
 
-  const showGroupFilter =
-    filterPhase === "Fase de Grupos" || filterPhase === "Todos";
-
-  // Opções para os filtros
   const phaseOptions: FilterOption[] = [
     { value: "Todos", label: "Todas as fases" },
     ...PHASES.map((p) => ({ value: p, label: p })),
   ];
-
   const groupOptions: FilterOption[] = [
     { value: "Todos", label: "Todos os grupos" },
     ...GROUPS.map((g) => ({ value: g, label: `Grupo ${g}` })),
   ];
-
   const dateOptions: FilterOption[] = [
     { value: "Todos", label: "Todas as datas" },
     ...availableDates.map((d) => ({ value: d, label: formatDateLabel(d) })),
   ];
 
-  // PDF share
-  function handleSharePDF() {
-    const userName =
-      userDoc?.displayName ?? user?.displayName ?? user?.email ?? "Participante";
+  // ─── Limpar apostas abertas ────────────────────────────────────────────────
+  async function handleClearOpenBets() {
+    if (!user?.uid) return;
 
-    const html = generatePDFHTML(
-      filteredGames,
-      (gameId) => {
-        const b = getBetForGame(gameId);
-        return b ? { homeScore: b.homeScore, awayScore: b.awayScore, points: b.points } : undefined;
-      },
-      userName,
-      filterPhase,
-      filterGroup,
-      filterDate
+    const openBets = bets.filter((bet) => {
+      const game = games.find((g) => g.id === bet.gameId);
+      return game?.status === "upcoming";
+    });
+
+    if (openBets.length === 0) {
+      toast.info("Não há apostas em jogos ainda abertos.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Isso vai apagar ${openBets.length} aposta(s) em jogos ainda abertos.\n\n` +
+        "Apostas em jogos travados ou encerrados NÃO serão afetadas.\n\n" +
+        "Esta ação não pode ser desfeita. Deseja continuar?"
     );
+    if (!confirmed) return;
 
-    const win = window.open("", "_blank");
-    if (win) {
-      win.document.write(html);
-      win.document.close();
+    setClearingBets(true);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch("/api/bets/clear-open", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ userId: user.uid }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "Erro desconhecido");
+      }
+      const data = await res.json();
+      toast.success(`${data.deleted} aposta(s) removida(s) com sucesso.`);
+    } catch (err) {
+      toast.error(`Erro: ${(err as Error).message}`);
+    } finally {
+      setClearingBets(false);
+    }
+  }
+
+  // ─── Gerar PDF para download ───────────────────────────────────────────────
+  async function handleSharePDF() {
+    if (filteredGames.length === 0) return;
+    setSharingPdf(true);
+
+    try {
+      // Dynamic import para evitar SSR
+      const jsPDF = (await import("jspdf")).default;
+      const autoTable = (await import("jspdf-autotable")).default;
+
+      const userName =
+        userDoc?.displayName ?? user?.displayName ?? user?.email ?? "Participante";
+
+      const filterDesc = [
+        filterPhase !== "Todos" ? filterPhase : null,
+        filterGroup !== "Todos" ? `Grupo ${filterGroup}` : null,
+        filterDate !== "Todos" ? formatDateLabel(filterDate) : null,
+      ]
+        .filter(Boolean)
+        .join(" · ") || "Todos os jogos";
+
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+      // Cabeçalho
+      doc.setFillColor(22, 163, 74);
+      doc.rect(0, 0, 210, 28, "F");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.setTextColor(255, 255, 255);
+      doc.text("⚽ Bolão Copa do Mundo 2026", 14, 12);
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Apostas de ${userName}  ·  ${filterDesc}`, 14, 20);
+
+      const geradoEm = format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+      doc.text(`Gerado em ${geradoEm}`, 210 - 14, 20, { align: "right" });
+
+      // Tabela
+      const tableBody = filteredGames.map((g) => {
+        const bet = getBetForGame(g.id);
+        const dateBRT = format(toZonedTime(g.date.toDate(), BRT), "dd/MM HH:mm", {
+          locale: ptBR,
+        });
+        const statusLabel =
+          g.status === "finished"
+            ? "Encerrado"
+            : g.status === "locked"
+            ? "Travado"
+            : "Aberto";
+
+        const resultado =
+          g.status === "finished"
+            ? `${g.homeScore} × ${g.awayScore}`
+            : statusLabel;
+
+        const palpite = bet ? `${bet.homeScore} × ${bet.awayScore}` : "-";
+
+        let pts = "-";
+        if (g.status === "finished" && bet?.points !== null) {
+          pts = `+${bet.points}`;
+        }
+
+        return [
+          `${g.homeTeam} × ${g.awayTeam}`,
+          g.phase + (g.group ? ` G${g.group}` : ""),
+          dateBRT,
+          palpite,
+          resultado,
+          pts,
+        ];
+      });
+
+      const totalPts = filteredGames.reduce((sum, g) => {
+        const b = getBetForGame(g.id);
+        return sum + (b?.points ?? 0);
+      }, 0);
+
+      autoTable(doc, {
+        startY: 32,
+        head: [["Jogo", "Fase", "Data (BRT)", "Palpite", "Resultado", "Pts"]],
+        body: tableBody,
+        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: {
+          fillColor: [22, 163, 74],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          fontSize: 8,
+        },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        columnStyles: {
+          0: { cellWidth: 60 },
+          1: { cellWidth: 22 },
+          2: { cellWidth: 22 },
+          3: { cellWidth: 20, halign: "center" },
+          4: { cellWidth: 22, halign: "center" },
+          5: { cellWidth: 14, halign: "center", fontStyle: "bold" },
+        },
+      });
+
+      // Rodapé com total
+      const finalY = (doc as any).lastAutoTable?.finalY ?? 200;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(22, 163, 74);
+      doc.text(`Total: ${totalPts} pts`, 210 - 14, finalY + 8, { align: "right" });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(148, 163, 184);
+      doc.text("Bolão Copa do Mundo 2026", 14, finalY + 8);
+
+      // Download
+      const safeName = userName.replace(/[^a-zA-Z0-9]/g, "_");
+      doc.save(`bolao-copa-2026-${safeName}.pdf`);
+    } catch (err) {
+      console.error("Erro ao gerar PDF:", err);
+      toast.error("Erro ao gerar PDF. Tente novamente.");
+    } finally {
+      setSharingPdf(false);
     }
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Apostas</h1>
           <p className="text-muted-foreground text-sm">
-            Faça seu palpite para cada jogo. Apostas travam {settings?.lockMinutesBefore ?? 5} minutos antes do apito.
+            Faça seu palpite para cada jogo. Apostas travam{" "}
+            {settings?.lockMinutesBefore ?? 5} minutos antes do apito.
           </p>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleSharePDF}
-          disabled={loading || filteredGames.length === 0}
-          className="flex items-center gap-1.5 shrink-0"
-        >
-          <Share2 className="h-4 w-4" />
-          <span className="hidden sm:inline">Compartilhar</span>
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleClearOpenBets}
+            disabled={clearingBets || loading}
+            className="flex items-center gap-1.5 text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/5"
+            title="Apagar todas as apostas em jogos ainda abertos"
+          >
+            {clearingBets ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+            <span className="hidden sm:inline">Limpar</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleSharePDF}
+            disabled={sharingPdf || loading || filteredGames.length === 0}
+            className="flex items-center gap-1.5"
+          >
+            {sharingPdf ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FileDown className="h-4 w-4" />
+            )}
+            <span className="hidden sm:inline">PDF</span>
+          </Button>
+        </div>
       </div>
 
       {/* Filtros compactos */}

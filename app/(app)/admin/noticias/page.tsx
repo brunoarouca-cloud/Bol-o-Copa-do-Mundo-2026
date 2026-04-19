@@ -1,40 +1,50 @@
 "use client";
 
-import { useState } from "react";
-import { auth } from "@/lib/firebase/client";
+import { useState, useEffect } from "react";
+import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from "firebase/firestore";
+import { db, auth } from "@/lib/firebase/client";
+import { newsConverter } from "@/lib/firebase/converters";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, Newspaper } from "lucide-react";
+import { Loader2, RefreshCw, Newspaper, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import type { NewsArticle } from "@/types";
 
 export default function AdminNoticiasPage() {
   const [generating, setGenerating] = useState(false);
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [loadingArticles, setLoadingArticles] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const today = format(new Date(), "yyyy-MM-dd");
   const todayDisplay = format(new Date(), "dd/MM/yyyy", { locale: ptBR });
+
+  // Carrega notícias em tempo real
+  useEffect(() => {
+    const q = query(
+      collection(db, "news").withConverter(newsConverter),
+      orderBy("date", "desc")
+    );
+    return onSnapshot(q, (snap) => {
+      setArticles(snap.docs.map((d) => d.data()));
+      setLoadingArticles(false);
+    });
+  }, []);
 
   async function handleGenerate(force = false) {
     setGenerating(true);
     try {
       const token = await auth.currentUser?.getIdToken();
       const url = `/api/generate-news${force ? "?force=1" : ""}`;
-
       const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET ?? ""}`,
-        },
+        headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET ?? ""}` },
       });
-
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error ?? "Erro desconhecido");
-      }
-
+      if (!response.ok) throw new Error(data.error ?? "Erro desconhecido");
       if (data.message?.includes("já gerada")) {
-        toast.info("Notícia já existe para hoje. Use 'Forçar geração' para recriar.");
+        toast.info("Notícia já existe para hoje. Use 'Forçar regeneração' para recriar.");
       } else {
         toast.success(`Notícia gerada: "${data.title}"`);
       }
@@ -45,8 +55,25 @@ export default function AdminNoticiasPage() {
     }
   }
 
+  async function handleDelete(article: NewsArticle) {
+    const confirmed = window.confirm(
+      `Excluir a notícia "${article.title}"?\n\nEsta ação não pode ser desfeita.`
+    );
+    if (!confirmed) return;
+
+    setDeletingId(article.id);
+    try {
+      await deleteDoc(doc(db, "news", article.id));
+      toast.success("Notícia excluída.");
+    } catch (err) {
+      toast.error("Erro ao excluir notícia.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   return (
-    <div className="max-w-lg space-y-6">
+    <div className="max-w-2xl space-y-6">
       <div>
         <h1 className="text-xl font-bold">Notícias Diárias</h1>
         <p className="text-sm text-muted-foreground">
@@ -54,6 +81,7 @@ export default function AdminNoticiasPage() {
         </p>
       </div>
 
+      {/* Gerar notícia */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -64,10 +92,8 @@ export default function AdminNoticiasPage() {
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
             A notícia é gerada automaticamente com base nos jogos do dia e no ranking do bolão.
-            {!process.env.NEXT_PUBLIC_FIREBASE_API_KEY?.startsWith("AIza") ? "" : " Configure OPENAI_API_KEY para notícias geradas por IA."}
           </p>
-
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
             <Button onClick={() => handleGenerate(false)} disabled={generating}>
               {generating ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -76,17 +102,86 @@ export default function AdminNoticiasPage() {
               )}
               Gerar notícia de hoje
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleGenerate(true)}
-              disabled={generating}
-            >
+            <Button variant="outline" onClick={() => handleGenerate(true)} disabled={generating}>
               <RefreshCw className="mr-2 h-4 w-4" />
               Forçar regeneração
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Lista de notícias */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold">
+            Notícias publicadas{" "}
+            {!loadingArticles && (
+              <span className="text-sm font-normal text-muted-foreground">
+                ({articles.length})
+              </span>
+            )}
+          </h2>
+        </div>
+
+        {loadingArticles ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+        ) : articles.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">
+            Nenhuma notícia publicada ainda.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {articles.map((article) => {
+              const isToday = article.date === today;
+              return (
+                <div
+                  key={article.id}
+                  className="flex items-start gap-3 rounded-lg border p-3 hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {format(new Date(article.date + "T12:00:00"), "dd/MM/yyyy", {
+                          locale: ptBR,
+                        })}
+                      </span>
+                      {isToday && (
+                        <span className="rounded-full bg-primary/10 text-primary text-xs px-2 py-0.5 font-medium">
+                          Hoje
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm font-semibold mt-0.5 leading-tight line-clamp-2">
+                      {article.title}
+                    </p>
+                    {article.highlights?.length > 0 && (
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                        {article.highlights.join(" · ")}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleDelete(article)}
+                    disabled={deletingId === article.id}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                    aria-label={`Excluir "${article.title}"`}
+                  >
+                    {deletingId === article.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

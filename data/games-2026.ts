@@ -47,7 +47,7 @@ export const GAMES_2026: GameSeed[] = [
 
   // GRUPO A: México 🇲🇽 · África do Sul 🇿🇦 · Coreia do Sul 🇰🇷 · República Tcheca 🇨🇿
   { id: "GS01", matchNumber: 1,  phase: "Fase de Grupos", group: "A", homeTeam: "México",          awayTeam: "África do Sul",       homeFlag: "🇲🇽", awayFlag: "🇿🇦", dateUTC: "2026-06-11T19:00:00Z", venue: "Estadio Azteca",           city: "Cidade do México", country: "México" },
-  { id: "GS02", matchNumber: 2,  phase: "Fase de Grupos", group: "A", homeTeam: "Coreia do Sul",   awayTeam: "República Tcheca",    homeFlag: "🇰🇷", awayFlag: "🇨🇿", dateUTC: "2026-06-12T22:00:00Z", venue: "Estadio Akron",            city: "Guadalajara",      country: "México" },
+  { id: "GS02", matchNumber: 2,  phase: "Fase de Grupos", group: "A", homeTeam: "Coreia do Sul",   awayTeam: "República Tcheca",    homeFlag: "🇰🇷", awayFlag: "🇨🇿", dateUTC: "2026-06-12T02:00:00Z", venue: "Estadio Akron",            city: "Guadalajara",      country: "México" },
 
   // GRUPO B: Canadá 🇨🇦 · Suíça 🇨🇭 · Catar 🇶🇦 · Bósnia e Herzegovina 🇧🇦
   { id: "GS03", matchNumber: 3,  phase: "Fase de Grupos", group: "B", homeTeam: "Canadá",          awayTeam: "Bósnia e Herzegovina",homeFlag: "🇨🇦", awayFlag: "🇧🇦", dateUTC: "2026-06-12T20:00:00Z", venue: "BMO Field",                city: "Toronto",          country: "Canadá" },
