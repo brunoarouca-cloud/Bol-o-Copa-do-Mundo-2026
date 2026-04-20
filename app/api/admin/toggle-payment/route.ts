@@ -55,7 +55,8 @@ export async function POST(request: NextRequest) {
       hasPaid,
     });
   } catch (error) {
-    console.error("[admin/toggle-payment] Erro:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("[admin/toggle-payment] Erro:", msg);
+    return NextResponse.json({ error: `Erro interno: ${msg}` }, { status: 500 });
   }
 }
