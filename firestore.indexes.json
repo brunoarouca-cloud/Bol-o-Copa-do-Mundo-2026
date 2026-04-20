@@ -9,13 +9,6 @@
       ]
     },
     {
-      "collectionGroup": "bets",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "gameId", "order": "ASCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [

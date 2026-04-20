@@ -5,7 +5,12 @@ import { getAdminFirestore, getAdminAuth } from "@/lib/firebase/admin";
  * POST /api/admin/clear-result
  * Body: { gameId }
  *
- * Remove o resultado de um jogo (zera placar, volta status para upcoming).
+ * Remove o resultado de um jogo:
+ * - Zera homeScore/awayScore, volta status para "upcoming"
+ * - Subtrai os pontos que cada aposta deste jogo havia gerado
+ * - Atualiza totalPoints e exactHits de cada usuário afetado
+ * - Recalcula ranking
+ *
  * Requer token de admin no header Authorization.
  */
 export async function POST(request: NextRequest) {
@@ -43,15 +48,89 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Jogo não encontrado" }, { status: 404 });
     }
 
+    // 1. Busca as configurações de pontuação para saber o valor de exactScore
+    const settingsSnap = await db.collection("settings").doc("scoring").get();
+    const exactScoreValue: number = settingsSnap.exists
+      ? (settingsSnap.data()?.exactScore ?? 20)
+      : 20;
+
+    // 2. Busca todas as apostas deste jogo que já têm pontos computados
+    const betsSnap = await db
+      .collection("bets")
+      .where("gameId", "==", gameId)
+      .get();
+
+    // 3. Calcula o delta de pontos a subtrair de cada usuário
+    const userDeltas = new Map<string, { pointsDelta: number; exactHitsDelta: number }>();
+
+    if (!betsSnap.empty) {
+      const betBatch = db.batch();
+
+      for (const betDoc of betsSnap.docs) {
+        const bet = betDoc.data();
+        const oldPoints: number = bet.points ?? 0;
+
+        if (oldPoints === 0) continue; // sem pontos para descontar
+
+        // Zera pontos da aposta
+        betBatch.update(betDoc.ref, { points: null });
+
+        const curr = userDeltas.get(bet.userId) ?? { pointsDelta: 0, exactHitsDelta: 0 };
+        curr.pointsDelta -= oldPoints;
+        if (oldPoints === exactScoreValue) {
+          curr.exactHitsDelta -= 1;
+        }
+        userDeltas.set(bet.userId, curr);
+      }
+
+      await betBatch.commit();
+    }
+
+    // 4. Atualiza pontos dos usuários afetados
+    if (userDeltas.size > 0) {
+      const userBatch = db.batch();
+      for (const [userId, delta] of userDeltas.entries()) {
+        const userSnap = await db.collection("users").doc(userId).get();
+        if (!userSnap.exists) continue;
+        const data = userSnap.data()!;
+        userBatch.update(userSnap.ref, {
+          totalPoints: Math.max(0, (data.totalPoints ?? 0) + delta.pointsDelta),
+          exactHits: Math.max(0, (data.exactHits ?? 0) + delta.exactHitsDelta),
+        });
+      }
+      await userBatch.commit();
+    }
+
+    // 5. Recalcula ranking
+    const usersSnap = await db
+      .collection("users")
+      .orderBy("totalPoints", "desc")
+      .orderBy("exactHits", "desc")
+      .get();
+
+    if (usersSnap.docs.length > 0) {
+      const rankBatch = db.batch();
+      usersSnap.docs.forEach((u, i) => {
+        rankBatch.update(u.ref, { rank: i + 1 });
+      });
+      await rankBatch.commit();
+    }
+
+    // 6. Zera o placar do jogo e volta para "upcoming"
     await gameRef.update({
       homeScore: null,
       awayScore: null,
       status: "upcoming",
     });
 
-    return NextResponse.json({ message: "Resultado removido com sucesso", gameId });
+    return NextResponse.json({
+      message: "Resultado removido e pontos descontados.",
+      gameId,
+      usersAffected: userDeltas.size,
+    });
   } catch (error) {
-    console.error("[admin/clear-result] Erro:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("[admin/clear-result] Erro:", msg);
+    return NextResponse.json({ error: `Erro interno: ${msg}` }, { status: 500 });
   }
 }
