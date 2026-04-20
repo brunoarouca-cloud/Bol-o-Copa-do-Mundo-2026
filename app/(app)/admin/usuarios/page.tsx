@@ -124,8 +124,9 @@ export default function AdminUsuariosPage() {
         .map((g) => ({ bet: betsMap.get(g.id)!, game: g }));
 
       setUserBets(combined);
-    } catch {
-      toast.error("Erro ao carregar apostas.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Erro ao carregar apostas: ${msg}`);
     } finally {
       setLoadingBets(false);
     }
@@ -305,18 +306,13 @@ export default function AdminUsuariosPage() {
                           #{game.matchNumber}
                         </span>
                         <span className="font-semibold">{game.homeTeam}</span>
-                        {isFinished && (
-                          <span className="text-muted-foreground text-xs">
-                            {game.homeScore} × {game.awayScore}
-                          </span>
-                        )}
                         <span className="text-muted-foreground">×</span>
-                        {isFinished && (
-                          <span className="text-muted-foreground text-xs">
-                            {/* away score shown inline */}
-                          </span>
-                        )}
                         <span className="font-semibold">{game.awayTeam}</span>
+                        {!isFinished && (
+                          <Badge variant="outline" className="text-xs py-0">
+                            {game.status === "locked" ? "Travado" : "Aberto"}
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-xs text-muted-foreground">
@@ -332,11 +328,6 @@ export default function AdminUsuariosPage() {
                               {game.homeScore} × {game.awayScore}
                             </strong>
                           </span>
-                        )}
-                        {!isFinished && (
-                          <Badge variant="outline" className="text-xs py-0">
-                            {game.status === "locked" ? "Travado" : "Aberto"}
-                          </Badge>
                         )}
                       </div>
                     </div>

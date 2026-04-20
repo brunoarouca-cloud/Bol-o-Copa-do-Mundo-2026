@@ -20,7 +20,7 @@ export function useRanking() {
     const unsubscribe = onSnapshot(
       q,
       (snap) => {
-        setUsers(snap.docs.map((d) => d.data()).filter((u) => !u.isAdmin));
+        setUsers(snap.docs.map((d) => d.data()).filter((u) => !u.isAdmin && u.hasPaid));
         setLoading(false);
       },
       (err) => {
