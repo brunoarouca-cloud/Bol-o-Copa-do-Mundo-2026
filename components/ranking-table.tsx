@@ -48,8 +48,9 @@ export function RankingTable({ users, currentUserId }: RankingTableProps) {
       const betsMap = new Map(betsSnap.docs.map((d) => [d.data().gameId, d.data()]));
       const allGames = gamesSnap.docs.map((d) => d.data());
 
+      // Mostra só jogos encerrados para não revelar palpites abertos de outros usuários
       const combined = allGames
-        .filter((g) => betsMap.has(g.id))
+        .filter((g) => g.status === "finished" && betsMap.has(g.id))
         .map((g) => ({ bet: betsMap.get(g.id)!, game: g }));
 
       setUserBets(combined);
