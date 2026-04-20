@@ -1,31 +1,32 @@
-import { format, formatDistanceToNow } from "date-fns";
-import { toZonedTime, fromZonedTime } from "date-fns-tz";
+import { formatDistanceToNow } from "date-fns";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { ptBR } from "date-fns/locale";
 import { Timestamp } from "firebase/firestore";
 
 const BRT_TIMEZONE = "America/Sao_Paulo";
 
 /**
- * Converte Timestamp do Firestore para Date no fuso BRT
- */
-export function timestampToBRT(timestamp: Timestamp): Date {
-  return toZonedTime(timestamp.toDate(), BRT_TIMEZONE);
-}
-
-/**
- * Formata data para exibição em PT-BR
+ * Formata data para exibição em PT-BR no fuso de Brasília
  */
 export function formatGameDate(timestamp: Timestamp): string {
-  const date = timestampToBRT(timestamp);
-  return format(date, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+  return formatInTimeZone(
+    timestamp.toDate(),
+    BRT_TIMEZONE,
+    "dd/MM/yyyy 'às' HH:mm",
+    { locale: ptBR }
+  );
 }
 
 /**
- * Formata data curta (para card de jogo)
+ * Formata data curta (para card de jogo) no fuso de Brasília
  */
 export function formatGameDateShort(timestamp: Timestamp): string {
-  const date = timestampToBRT(timestamp);
-  return format(date, "dd/MM HH:mm", { locale: ptBR });
+  return formatInTimeZone(
+    timestamp.toDate(),
+    BRT_TIMEZONE,
+    "dd/MM HH:mm",
+    { locale: ptBR }
+  );
 }
 
 /**
@@ -65,11 +66,10 @@ export function brtToUTC(dateStr: string, timeStr: string = "00:00"): Date {
 }
 
 /**
- * Formata data para exibição no ranking
+ * Formata data para exibição no ranking (no fuso de Brasília)
  */
 export function formatDate(timestamp: Timestamp): string {
-  const date = timestampToBRT(timestamp);
-  return format(date, "dd/MM/yyyy", { locale: ptBR });
+  return formatInTimeZone(timestamp.toDate(), BRT_TIMEZONE, "dd/MM/yyyy", { locale: ptBR });
 }
 
 /**
