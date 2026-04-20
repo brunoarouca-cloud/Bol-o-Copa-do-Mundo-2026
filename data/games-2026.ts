@@ -14,12 +14,12 @@
  *   H: Espanha, Cabo Verde, Arábia Saudita, Uruguai
  *   I: França, Senegal, Noruega, Iraque
  *   J: Argentina, Argélia, Áustria, Jordânia
- *   K: Portugal, Uzbequistão, Colômbia, Rep. Dem. do Congo
+ *   K: Portugal, Rep. Dem. do Congo, Uzbequistão, Colômbia
  *   L: Inglaterra, Croácia, Gana, Panamá
  *
  * Fases mata-mata usam placeholders — atualize via painel Admin conforme avança.
- * Horários em UTC. Datas/horários confirmados onde disponíveis; demais são estimativas
- * baseadas no calendário oficial FIFA 2026.
+ * Horários em UTC. Fonte: FIFA FWC26 Match Schedule v17 (10/04/2026).
+ * Conversão ET (EDT = UTC−4) → UTC, validada em todos os 72 jogos da fase de grupos.
  */
 
 import type { GamePhase } from "@/types";
@@ -42,160 +42,158 @@ interface GameSeed {
 export const GAMES_2026: GameSeed[] = [
 
   // ===========================================================
-  // FASE DE GRUPOS — RODADA 1
+  // FASE DE GRUPOS — RODADA 1  (jogos #1–#24)
+  // Horários em UTC. Fonte: FIFA FWC26 Match Schedule v17 (10/04/2026)
+  // Conversão: ET (EDT = UTC−4) → UTC
   // ===========================================================
 
   // GRUPO A: México 🇲🇽 · África do Sul 🇿🇦 · Coreia do Sul 🇰🇷 · República Tcheca 🇨🇿
-  { id: "GS01", matchNumber: 1,  phase: "Fase de Grupos", group: "A", homeTeam: "México",          awayTeam: "África do Sul",       homeFlag: "🇲🇽", awayFlag: "🇿🇦", dateUTC: "2026-06-11T19:00:00Z", venue: "Estadio Azteca",           city: "Cidade do México", country: "México" },
-  { id: "GS02", matchNumber: 2,  phase: "Fase de Grupos", group: "A", homeTeam: "Coreia do Sul",   awayTeam: "República Tcheca",    homeFlag: "🇰🇷", awayFlag: "🇨🇿", dateUTC: "2026-06-12T02:00:00Z", venue: "Estadio Akron",            city: "Guadalajara",      country: "México" },
+  { id: "GS01", matchNumber:  1, phase: "Fase de Grupos", group: "A", homeTeam: "México",              awayTeam: "África do Sul",         homeFlag: "🇲🇽", awayFlag: "🇿🇦", dateUTC: "2026-06-11T19:00:00Z", venue: "Estadio Azteca",          city: "Cidade do México", country: "México" },
+  { id: "GS02", matchNumber:  2, phase: "Fase de Grupos", group: "A", homeTeam: "Coreia do Sul",       awayTeam: "República Tcheca",      homeFlag: "🇰🇷", awayFlag: "🇨🇿", dateUTC: "2026-06-12T02:00:00Z", venue: "Estadio Akron",           city: "Guadalajara",      country: "México" },
 
-  // GRUPO B: Canadá 🇨🇦 · Suíça 🇨🇭 · Catar 🇶🇦 · Bósnia e Herzegovina 🇧🇦
-  { id: "GS03", matchNumber: 3,  phase: "Fase de Grupos", group: "B", homeTeam: "Canadá",          awayTeam: "Bósnia e Herzegovina",homeFlag: "🇨🇦", awayFlag: "🇧🇦", dateUTC: "2026-06-12T20:00:00Z", venue: "BMO Field",                city: "Toronto",          country: "Canadá" },
-  { id: "GS04", matchNumber: 4,  phase: "Fase de Grupos", group: "B", homeTeam: "Catar",           awayTeam: "Suíça",               homeFlag: "🇶🇦", awayFlag: "🇨🇭", dateUTC: "2026-06-13T22:00:00Z", venue: "Levi's Stadium",           city: "São Francisco",    country: "EUA" },
-
-  // GRUPO D: EUA 🇺🇸 · Paraguai 🇵🇾 · Austrália 🇦🇺 · Turquia 🇹🇷
-  { id: "GS05", matchNumber: 5,  phase: "Fase de Grupos", group: "D", homeTeam: "EUA",             awayTeam: "Paraguai",            homeFlag: "🇺🇸", awayFlag: "🇵🇾", dateUTC: "2026-06-12T23:00:00Z", venue: "SoFi Stadium",             city: "Los Angeles",      country: "EUA" },
-  { id: "GS06", matchNumber: 6,  phase: "Fase de Grupos", group: "D", homeTeam: "Austrália",       awayTeam: "Turquia",             homeFlag: "🇦🇺", awayFlag: "🇹🇷", dateUTC: "2026-06-13T02:00:00Z", venue: "BC Place",                 city: "Vancouver",        country: "Canadá" },
+  // GRUPO B: Canadá 🇨🇦 · Bósnia e Herzegovina 🇧🇦 · Catar 🇶🇦 · Suíça 🇨🇭
+  { id: "GS03", matchNumber:  3, phase: "Fase de Grupos", group: "B", homeTeam: "Canadá",              awayTeam: "Bósnia e Herzegovina",  homeFlag: "🇨🇦", awayFlag: "🇧🇦", dateUTC: "2026-06-12T19:00:00Z", venue: "BMO Field",               city: "Toronto",          country: "Canadá" },
+  { id: "GS04", matchNumber:  4, phase: "Fase de Grupos", group: "D", homeTeam: "EUA",                 awayTeam: "Paraguai",               homeFlag: "🇺🇸", awayFlag: "🇵🇾", dateUTC: "2026-06-13T01:00:00Z", venue: "SoFi Stadium",            city: "Los Angeles",      country: "EUA" },
 
   // GRUPO C: Brasil 🇧🇷 · Marrocos 🇲🇦 · Haiti 🇭🇹 · Escócia 🏴󠁧󠁢󠁳󠁣󠁴󠁿
-  { id: "GS07", matchNumber: 7,  phase: "Fase de Grupos", group: "C", homeTeam: "Brasil",          awayTeam: "Marrocos",            homeFlag: "🇧🇷", awayFlag: "🇲🇦", dateUTC: "2026-06-13T22:00:00Z", venue: "MetLife Stadium",          city: "Nova York",        country: "EUA" },
-  { id: "GS08", matchNumber: 8,  phase: "Fase de Grupos", group: "C", homeTeam: "Haiti",           awayTeam: "Escócia",             homeFlag: "🇭🇹", awayFlag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", dateUTC: "2026-06-13T19:00:00Z", venue: "Gillette Stadium",         city: "Boston",           country: "EUA" },
+  { id: "GS05", matchNumber:  5, phase: "Fase de Grupos", group: "C", homeTeam: "Haiti",               awayTeam: "Escócia",                homeFlag: "🇭🇹", awayFlag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", dateUTC: "2026-06-14T01:00:00Z", venue: "Gillette Stadium",        city: "Boston",           country: "EUA" },
+  { id: "GS06", matchNumber:  6, phase: "Fase de Grupos", group: "D", homeTeam: "Austrália",           awayTeam: "Turquia",                homeFlag: "🇦🇺", awayFlag: "🇹🇷", dateUTC: "2026-06-13T04:00:00Z", venue: "BC Place",                city: "Vancouver",        country: "Canadá" },
+  { id: "GS07", matchNumber:  7, phase: "Fase de Grupos", group: "C", homeTeam: "Brasil",              awayTeam: "Marrocos",               homeFlag: "🇧🇷", awayFlag: "🇲🇦", dateUTC: "2026-06-13T22:00:00Z", venue: "MetLife Stadium",         city: "Nova York",        country: "EUA" },
+  { id: "GS08", matchNumber:  8, phase: "Fase de Grupos", group: "B", homeTeam: "Catar",               awayTeam: "Suíça",                  homeFlag: "🇶🇦", awayFlag: "🇨🇭", dateUTC: "2026-06-13T19:00:00Z", venue: "Levi's Stadium",          city: "São Francisco",    country: "EUA" },
 
   // GRUPO E: Alemanha 🇩🇪 · Curaçao 🇨🇼 · Costa do Marfim 🇨🇮 · Equador 🇪🇨
-  { id: "GS09", matchNumber: 9,  phase: "Fase de Grupos", group: "E", homeTeam: "Alemanha",        awayTeam: "Curaçao",             homeFlag: "🇩🇪", awayFlag: "🇨🇼", dateUTC: "2026-06-14T17:00:00Z", venue: "NRG Stadium",              city: "Houston",          country: "EUA" },
-  { id: "GS10", matchNumber: 10, phase: "Fase de Grupos", group: "E", homeTeam: "Costa do Marfim", awayTeam: "Equador",             homeFlag: "🇨🇮", awayFlag: "🇪🇨", dateUTC: "2026-06-14T20:00:00Z", venue: "Lincoln Financial Field",  city: "Filadélfia",       country: "EUA" },
+  { id: "GS09", matchNumber:  9, phase: "Fase de Grupos", group: "E", homeTeam: "Costa do Marfim",     awayTeam: "Equador",                homeFlag: "🇨🇮", awayFlag: "🇪🇨", dateUTC: "2026-06-14T23:00:00Z", venue: "Lincoln Financial Field", city: "Filadélfia",       country: "EUA" },
+  { id: "GS10", matchNumber: 10, phase: "Fase de Grupos", group: "E", homeTeam: "Alemanha",            awayTeam: "Curaçao",                homeFlag: "🇩🇪", awayFlag: "🇨🇼", dateUTC: "2026-06-14T17:00:00Z", venue: "NRG Stadium",             city: "Houston",          country: "EUA" },
 
-  // GRUPO F: Países Baixos 🇳🇱 · Japão 🇯🇵 · Tunísia 🇹🇳 · Suécia 🇸🇪
-  { id: "GS11", matchNumber: 11, phase: "Fase de Grupos", group: "F", homeTeam: "Países Baixos",   awayTeam: "Japão",               homeFlag: "🇳🇱", awayFlag: "🇯🇵", dateUTC: "2026-06-14T23:00:00Z", venue: "AT&T Stadium",             city: "Dallas",           country: "EUA" },
-  { id: "GS12", matchNumber: 12, phase: "Fase de Grupos", group: "F", homeTeam: "Suécia",          awayTeam: "Tunísia",             homeFlag: "🇸🇪", awayFlag: "🇹🇳", dateUTC: "2026-06-15T02:00:00Z", venue: "Estadio Akron",            city: "Guadalajara",      country: "México" },
-
-  // GRUPO G: Bélgica 🇧🇪 · Egito 🇪🇬 · Irã 🇮🇷 · Nova Zelândia 🇳🇿
-  { id: "GS13", matchNumber: 13, phase: "Fase de Grupos", group: "G", homeTeam: "Bélgica",         awayTeam: "Egito",               homeFlag: "🇧🇪", awayFlag: "🇪🇬", dateUTC: "2026-06-15T17:00:00Z", venue: "Lumen Field",              city: "Seattle",          country: "EUA" },
-  { id: "GS14", matchNumber: 14, phase: "Fase de Grupos", group: "G", homeTeam: "Irã",             awayTeam: "Nova Zelândia",       homeFlag: "🇮🇷", awayFlag: "🇳🇿", dateUTC: "2026-06-15T20:00:00Z", venue: "SoFi Stadium",             city: "Los Angeles",      country: "EUA" },
+  // GRUPO F: Países Baixos 🇳🇱 · Japão 🇯🇵 · Suécia 🇸🇪 · Tunísia 🇹🇳
+  { id: "GS11", matchNumber: 11, phase: "Fase de Grupos", group: "F", homeTeam: "Países Baixos",       awayTeam: "Japão",                  homeFlag: "🇳🇱", awayFlag: "🇯🇵", dateUTC: "2026-06-14T20:00:00Z", venue: "AT&T Stadium",            city: "Dallas",           country: "EUA" },
+  { id: "GS12", matchNumber: 12, phase: "Fase de Grupos", group: "F", homeTeam: "Suécia",              awayTeam: "Tunísia",                homeFlag: "🇸🇪", awayFlag: "🇹🇳", dateUTC: "2026-06-15T02:00:00Z", venue: "Estadio BBVA",            city: "Monterrey",        country: "México" },
 
   // GRUPO H: Espanha 🇪🇸 · Cabo Verde 🇨🇻 · Arábia Saudita 🇸🇦 · Uruguai 🇺🇾
-  { id: "GS15", matchNumber: 15, phase: "Fase de Grupos", group: "H", homeTeam: "Espanha",         awayTeam: "Cabo Verde",          homeFlag: "🇪🇸", awayFlag: "🇨🇻", dateUTC: "2026-06-15T23:00:00Z", venue: "Hard Rock Stadium",        city: "Miami",            country: "EUA" },
-  { id: "GS16", matchNumber: 16, phase: "Fase de Grupos", group: "H", homeTeam: "Arábia Saudita",  awayTeam: "Uruguai",             homeFlag: "🇸🇦", awayFlag: "🇺🇾", dateUTC: "2026-06-16T02:00:00Z", venue: "Rose Bowl",                city: "Los Angeles",      country: "EUA" },
+  { id: "GS13", matchNumber: 13, phase: "Fase de Grupos", group: "H", homeTeam: "Arábia Saudita",      awayTeam: "Uruguai",                homeFlag: "🇸🇦", awayFlag: "🇺🇾", dateUTC: "2026-06-15T22:00:00Z", venue: "Hard Rock Stadium",       city: "Miami",            country: "EUA" },
+  { id: "GS14", matchNumber: 14, phase: "Fase de Grupos", group: "H", homeTeam: "Espanha",             awayTeam: "Cabo Verde",             homeFlag: "🇪🇸", awayFlag: "🇨🇻", dateUTC: "2026-06-15T16:00:00Z", venue: "Mercedes-Benz Stadium",  city: "Atlanta",          country: "EUA" },
+
+  // GRUPO G: Bélgica 🇧🇪 · Egito 🇪🇬 · Irã 🇮🇷 · Nova Zelândia 🇳🇿
+  { id: "GS15", matchNumber: 15, phase: "Fase de Grupos", group: "G", homeTeam: "Irã",                 awayTeam: "Nova Zelândia",          homeFlag: "🇮🇷", awayFlag: "🇳🇿", dateUTC: "2026-06-16T01:00:00Z", venue: "SoFi Stadium",            city: "Los Angeles",      country: "EUA" },
+  { id: "GS16", matchNumber: 16, phase: "Fase de Grupos", group: "G", homeTeam: "Bélgica",             awayTeam: "Egito",                  homeFlag: "🇧🇪", awayFlag: "🇪🇬", dateUTC: "2026-06-15T19:00:00Z", venue: "Lumen Field",             city: "Seattle",          country: "EUA" },
 
   // GRUPO I: França 🇫🇷 · Senegal 🇸🇳 · Noruega 🇳🇴 · Iraque 🇮🇶
-  { id: "GS17", matchNumber: 17, phase: "Fase de Grupos", group: "I", homeTeam: "França",          awayTeam: "Senegal",             homeFlag: "🇫🇷", awayFlag: "🇸🇳", dateUTC: "2026-06-16T17:00:00Z", venue: "MetLife Stadium",          city: "Nova York",        country: "EUA" },
-  { id: "GS18", matchNumber: 18, phase: "Fase de Grupos", group: "I", homeTeam: "Iraque",          awayTeam: "Noruega",             homeFlag: "🇮🇶", awayFlag: "🇳🇴", dateUTC: "2026-06-16T20:00:00Z", venue: "AT&T Stadium",             city: "Dallas",           country: "EUA" },
+  { id: "GS17", matchNumber: 17, phase: "Fase de Grupos", group: "I", homeTeam: "França",              awayTeam: "Senegal",                homeFlag: "🇫🇷", awayFlag: "🇸🇳", dateUTC: "2026-06-16T19:00:00Z", venue: "MetLife Stadium",         city: "Nova York",        country: "EUA" },
+  { id: "GS18", matchNumber: 18, phase: "Fase de Grupos", group: "I", homeTeam: "Iraque",              awayTeam: "Noruega",                homeFlag: "🇮🇶", awayFlag: "🇳🇴", dateUTC: "2026-06-16T22:00:00Z", venue: "Gillette Stadium",        city: "Boston",           country: "EUA" },
 
   // GRUPO J: Argentina 🇦🇷 · Argélia 🇩🇿 · Áustria 🇦🇹 · Jordânia 🇯🇴
-  { id: "GS19", matchNumber: 19, phase: "Fase de Grupos", group: "J", homeTeam: "Argentina",       awayTeam: "Argélia",             homeFlag: "🇦🇷", awayFlag: "🇩🇿", dateUTC: "2026-06-17T20:00:00Z", venue: "Hard Rock Stadium",        city: "Miami",            country: "EUA" },
-  { id: "GS20", matchNumber: 20, phase: "Fase de Grupos", group: "J", homeTeam: "Áustria",         awayTeam: "Jordânia",            homeFlag: "🇦🇹", awayFlag: "🇯🇴", dateUTC: "2026-06-17T23:00:00Z", venue: "Arrowhead Stadium",        city: "Kansas City",      country: "EUA" },
-
-  // GRUPO K: Portugal 🇵🇹 · Uzbequistão 🇺🇿 · Colômbia 🇨🇴 · Rep. Dem. do Congo 🇨🇩
-  { id: "GS21", matchNumber: 21, phase: "Fase de Grupos", group: "K", homeTeam: "Portugal",        awayTeam: "Uzbequistão",         homeFlag: "🇵🇹", awayFlag: "🇺🇿", dateUTC: "2026-06-18T20:00:00Z", venue: "Estadio Azteca",           city: "Cidade do México", country: "México" },
-  { id: "GS22", matchNumber: 22, phase: "Fase de Grupos", group: "K", homeTeam: "Colômbia",        awayTeam: "Rep. Dem. do Congo",  homeFlag: "🇨🇴", awayFlag: "🇨🇩", dateUTC: "2026-06-18T23:00:00Z", venue: "BC Place",                 city: "Vancouver",        country: "Canadá" },
+  { id: "GS19", matchNumber: 19, phase: "Fase de Grupos", group: "J", homeTeam: "Argentina",           awayTeam: "Argélia",                homeFlag: "🇦🇷", awayFlag: "🇩🇿", dateUTC: "2026-06-17T01:00:00Z", venue: "Arrowhead Stadium",       city: "Kansas City",      country: "EUA" },
+  { id: "GS20", matchNumber: 20, phase: "Fase de Grupos", group: "J", homeTeam: "Áustria",             awayTeam: "Jordânia",               homeFlag: "🇦🇹", awayFlag: "🇯🇴", dateUTC: "2026-06-16T04:00:00Z", venue: "Levi's Stadium",          city: "São Francisco",    country: "EUA" },
 
   // GRUPO L: Inglaterra 🏴󠁧󠁢󠁥󠁮󠁧󠁿 · Croácia 🇭🇷 · Gana 🇬🇭 · Panamá 🇵🇦
-  { id: "GS23", matchNumber: 23, phase: "Fase de Grupos", group: "L", homeTeam: "Inglaterra",      awayTeam: "Croácia",             homeFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", awayFlag: "🇭🇷", dateUTC: "2026-06-19T20:00:00Z", venue: "Mercedes-Benz Stadium",   city: "Atlanta",          country: "EUA" },
-  { id: "GS24", matchNumber: 24, phase: "Fase de Grupos", group: "L", homeTeam: "Gana",            awayTeam: "Panamá",              homeFlag: "🇬🇭", awayFlag: "🇵🇦", dateUTC: "2026-06-19T23:00:00Z", venue: "Estadio BBVA",             city: "Monterrey",        country: "México" },
+  { id: "GS21", matchNumber: 21, phase: "Fase de Grupos", group: "L", homeTeam: "Gana",                awayTeam: "Panamá",                 homeFlag: "🇬🇭", awayFlag: "🇵🇦", dateUTC: "2026-06-17T23:00:00Z", venue: "BMO Field",               city: "Toronto",          country: "Canadá" },
+  { id: "GS22", matchNumber: 22, phase: "Fase de Grupos", group: "L", homeTeam: "Inglaterra",          awayTeam: "Croácia",                homeFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", awayFlag: "🇭🇷", dateUTC: "2026-06-17T20:00:00Z", venue: "AT&T Stadium",            city: "Dallas",           country: "EUA" },
+
+  // GRUPO K: Portugal 🇵🇹 · Rep. Dem. do Congo 🇨🇩 · Uzbequistão 🇺🇿 · Colômbia 🇨🇴
+  { id: "GS23", matchNumber: 23, phase: "Fase de Grupos", group: "K", homeTeam: "Portugal",            awayTeam: "Rep. Dem. do Congo",    homeFlag: "🇵🇹", awayFlag: "🇨🇩", dateUTC: "2026-06-17T17:00:00Z", venue: "NRG Stadium",             city: "Houston",          country: "EUA" },
+  { id: "GS24", matchNumber: 24, phase: "Fase de Grupos", group: "K", homeTeam: "Uzbequistão",         awayTeam: "Colômbia",               homeFlag: "🇺🇿", awayFlag: "🇨🇴", dateUTC: "2026-06-18T02:00:00Z", venue: "Estadio Azteca",          city: "Cidade do México", country: "México" },
 
   // ===========================================================
-  // FASE DE GRUPOS — RODADA 2
+  // FASE DE GRUPOS — RODADA 2  (jogos #25–#48)
   // ===========================================================
 
   // GRUPO A
-  { id: "GS25", matchNumber: 25, phase: "Fase de Grupos", group: "A", homeTeam: "República Tcheca", awayTeam: "África do Sul",     homeFlag: "🇨🇿", awayFlag: "🇿🇦", dateUTC: "2026-06-18T19:00:00Z", venue: "Mercedes-Benz Stadium",   city: "Atlanta",          country: "EUA" },
-  { id: "GS26", matchNumber: 26, phase: "Fase de Grupos", group: "A", homeTeam: "México",          awayTeam: "Coreia do Sul",       homeFlag: "🇲🇽", awayFlag: "🇰🇷", dateUTC: "2026-06-18T22:00:00Z", venue: "Estadio Akron",            city: "Guadalajara",      country: "México" },
-
-  // GRUPO B
-  { id: "GS27", matchNumber: 27, phase: "Fase de Grupos", group: "B", homeTeam: "Canadá",          awayTeam: "Catar",               homeFlag: "🇨🇦", awayFlag: "🇶🇦", dateUTC: "2026-06-19T17:00:00Z", venue: "BMO Field",                city: "Toronto",          country: "Canadá" },
-  { id: "GS28", matchNumber: 28, phase: "Fase de Grupos", group: "B", homeTeam: "Bósnia e Herzegovina", awayTeam: "Suíça",          homeFlag: "🇧🇦", awayFlag: "🇨🇭", dateUTC: "2026-06-18T20:00:00Z", venue: "Arrowhead Stadium",        city: "Kansas City",      country: "EUA" },
-
-  // GRUPO D
-  { id: "GS29", matchNumber: 29, phase: "Fase de Grupos", group: "D", homeTeam: "EUA",             awayTeam: "Austrália",           homeFlag: "🇺🇸", awayFlag: "🇦🇺", dateUTC: "2026-06-20T20:00:00Z", venue: "AT&T Stadium",             city: "Dallas",           country: "EUA" },
-  { id: "GS30", matchNumber: 30, phase: "Fase de Grupos", group: "D", homeTeam: "Paraguai",        awayTeam: "Turquia",             homeFlag: "🇵🇾", awayFlag: "🇹🇷", dateUTC: "2026-06-20T23:00:00Z", venue: "Levi's Stadium",           city: "São Francisco",    country: "EUA" },
+  { id: "GS25", matchNumber: 25, phase: "Fase de Grupos", group: "A", homeTeam: "República Tcheca",   awayTeam: "África do Sul",         homeFlag: "🇨🇿", awayFlag: "🇿🇦", dateUTC: "2026-06-18T16:00:00Z", venue: "Mercedes-Benz Stadium",  city: "Atlanta",          country: "EUA" },
+  { id: "GS26", matchNumber: 26, phase: "Fase de Grupos", group: "B", homeTeam: "Suíça",              awayTeam: "Bósnia e Herzegovina",  homeFlag: "🇨🇭", awayFlag: "🇧🇦", dateUTC: "2026-06-18T19:00:00Z", venue: "SoFi Stadium",            city: "Los Angeles",      country: "EUA" },
+  { id: "GS27", matchNumber: 27, phase: "Fase de Grupos", group: "B", homeTeam: "Canadá",              awayTeam: "Catar",                  homeFlag: "🇨🇦", awayFlag: "🇶🇦", dateUTC: "2026-06-18T22:00:00Z", venue: "BC Place",                city: "Vancouver",        country: "Canadá" },
+  { id: "GS28", matchNumber: 28, phase: "Fase de Grupos", group: "A", homeTeam: "México",              awayTeam: "Coreia do Sul",          homeFlag: "🇲🇽", awayFlag: "🇰🇷", dateUTC: "2026-06-19T01:00:00Z", venue: "Estadio Akron",           city: "Guadalajara",      country: "México" },
 
   // GRUPO C
-  { id: "GS31", matchNumber: 31, phase: "Fase de Grupos", group: "C", homeTeam: "Brasil",          awayTeam: "Haiti",               homeFlag: "🇧🇷", awayFlag: "🇭🇹", dateUTC: "2026-06-20T17:00:00Z", venue: "Rose Bowl",                city: "Los Angeles",      country: "EUA" },
-  { id: "GS32", matchNumber: 32, phase: "Fase de Grupos", group: "C", homeTeam: "Escócia",         awayTeam: "Marrocos",            homeFlag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", awayFlag: "🇲🇦", dateUTC: "2026-06-20T14:00:00Z", venue: "Gillette Stadium",         city: "Boston",           country: "EUA" },
+  { id: "GS29", matchNumber: 29, phase: "Fase de Grupos", group: "C", homeTeam: "Brasil",              awayTeam: "Haiti",                  homeFlag: "🇧🇷", awayFlag: "🇭🇹", dateUTC: "2026-06-20T00:30:00Z", venue: "Lincoln Financial Field", city: "Filadélfia",       country: "EUA" },
+  { id: "GS30", matchNumber: 30, phase: "Fase de Grupos", group: "C", homeTeam: "Escócia",             awayTeam: "Marrocos",               homeFlag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", awayFlag: "🇲🇦", dateUTC: "2026-06-19T22:00:00Z", venue: "Gillette Stadium",        city: "Boston",           country: "EUA" },
+
+  // GRUPO D
+  { id: "GS31", matchNumber: 31, phase: "Fase de Grupos", group: "D", homeTeam: "Turquia",             awayTeam: "Paraguai",               homeFlag: "🇹🇷", awayFlag: "🇵🇾", dateUTC: "2026-06-20T03:00:00Z", venue: "Levi's Stadium",          city: "São Francisco",    country: "EUA" },
+  { id: "GS32", matchNumber: 32, phase: "Fase de Grupos", group: "D", homeTeam: "EUA",                 awayTeam: "Austrália",              homeFlag: "🇺🇸", awayFlag: "🇦🇺", dateUTC: "2026-06-19T19:00:00Z", venue: "Lumen Field",             city: "Seattle",          country: "EUA" },
 
   // GRUPO E
-  { id: "GS33", matchNumber: 33, phase: "Fase de Grupos", group: "E", homeTeam: "Alemanha",        awayTeam: "Costa do Marfim",     homeFlag: "🇩🇪", awayFlag: "🇨🇮", dateUTC: "2026-06-21T17:00:00Z", venue: "NRG Stadium",              city: "Houston",          country: "EUA" },
-  { id: "GS34", matchNumber: 34, phase: "Fase de Grupos", group: "E", homeTeam: "Curaçao",         awayTeam: "Equador",             homeFlag: "🇨🇼", awayFlag: "🇪🇨", dateUTC: "2026-06-21T14:00:00Z", venue: "Lincoln Financial Field",  city: "Filadélfia",       country: "EUA" },
+  { id: "GS33", matchNumber: 33, phase: "Fase de Grupos", group: "E", homeTeam: "Alemanha",            awayTeam: "Costa do Marfim",        homeFlag: "🇩🇪", awayFlag: "🇨🇮", dateUTC: "2026-06-20T20:00:00Z", venue: "BMO Field",               city: "Toronto",          country: "Canadá" },
+  { id: "GS34", matchNumber: 34, phase: "Fase de Grupos", group: "E", homeTeam: "Equador",             awayTeam: "Curaçao",                homeFlag: "🇪🇨", awayFlag: "🇨🇼", dateUTC: "2026-06-21T00:00:00Z", venue: "Arrowhead Stadium",       city: "Kansas City",      country: "EUA" },
 
   // GRUPO F
-  { id: "GS35", matchNumber: 35, phase: "Fase de Grupos", group: "F", homeTeam: "Países Baixos",   awayTeam: "Suécia",              homeFlag: "🇳🇱", awayFlag: "🇸🇪", dateUTC: "2026-06-21T20:00:00Z", venue: "AT&T Stadium",             city: "Dallas",           country: "EUA" },
-  { id: "GS36", matchNumber: 36, phase: "Fase de Grupos", group: "F", homeTeam: "Japão",           awayTeam: "Tunísia",             homeFlag: "🇯🇵", awayFlag: "🇹🇳", dateUTC: "2026-06-21T23:00:00Z", venue: "SoFi Stadium",             city: "Los Angeles",      country: "EUA" },
-
-  // GRUPO G
-  { id: "GS37", matchNumber: 37, phase: "Fase de Grupos", group: "G", homeTeam: "Bélgica",         awayTeam: "Irã",                 homeFlag: "🇧🇪", awayFlag: "🇮🇷", dateUTC: "2026-06-21T20:00:00Z", venue: "SoFi Stadium",             city: "Los Angeles",      country: "EUA" },
-  { id: "GS38", matchNumber: 38, phase: "Fase de Grupos", group: "G", homeTeam: "Nova Zelândia",   awayTeam: "Egito",               homeFlag: "🇳🇿", awayFlag: "🇪🇬", dateUTC: "2026-06-21T17:00:00Z", venue: "BC Place",                 city: "Vancouver",        country: "Canadá" },
+  { id: "GS35", matchNumber: 35, phase: "Fase de Grupos", group: "F", homeTeam: "Países Baixos",       awayTeam: "Suécia",                 homeFlag: "🇳🇱", awayFlag: "🇸🇪", dateUTC: "2026-06-20T17:00:00Z", venue: "NRG Stadium",             city: "Houston",          country: "EUA" },
+  { id: "GS36", matchNumber: 36, phase: "Fase de Grupos", group: "F", homeTeam: "Tunísia",             awayTeam: "Japão",                  homeFlag: "🇹🇳", awayFlag: "🇯🇵", dateUTC: "2026-06-20T04:00:00Z", venue: "Estadio BBVA",            city: "Monterrey",        country: "México" },
 
   // GRUPO H
-  { id: "GS39", matchNumber: 39, phase: "Fase de Grupos", group: "H", homeTeam: "Espanha",         awayTeam: "Arábia Saudita",      homeFlag: "🇪🇸", awayFlag: "🇸🇦", dateUTC: "2026-06-22T20:00:00Z", venue: "MetLife Stadium",          city: "Nova York",        country: "EUA" },
-  { id: "GS40", matchNumber: 40, phase: "Fase de Grupos", group: "H", homeTeam: "Cabo Verde",      awayTeam: "Uruguai",             homeFlag: "🇨🇻", awayFlag: "🇺🇾", dateUTC: "2026-06-22T23:00:00Z", venue: "Lumen Field",              city: "Seattle",          country: "EUA" },
+  { id: "GS37", matchNumber: 37, phase: "Fase de Grupos", group: "H", homeTeam: "Uruguai",             awayTeam: "Cabo Verde",             homeFlag: "🇺🇾", awayFlag: "🇨🇻", dateUTC: "2026-06-21T22:00:00Z", venue: "Hard Rock Stadium",       city: "Miami",            country: "EUA" },
+  { id: "GS38", matchNumber: 38, phase: "Fase de Grupos", group: "H", homeTeam: "Espanha",             awayTeam: "Arábia Saudita",         homeFlag: "🇪🇸", awayFlag: "🇸🇦", dateUTC: "2026-06-21T16:00:00Z", venue: "Mercedes-Benz Stadium",  city: "Atlanta",          country: "EUA" },
+
+  // GRUPO G
+  { id: "GS39", matchNumber: 39, phase: "Fase de Grupos", group: "G", homeTeam: "Bélgica",             awayTeam: "Irã",                    homeFlag: "🇧🇪", awayFlag: "🇮🇷", dateUTC: "2026-06-21T19:00:00Z", venue: "SoFi Stadium",            city: "Los Angeles",      country: "EUA" },
+  { id: "GS40", matchNumber: 40, phase: "Fase de Grupos", group: "G", homeTeam: "Nova Zelândia",       awayTeam: "Egito",                  homeFlag: "🇳🇿", awayFlag: "🇪🇬", dateUTC: "2026-06-22T01:00:00Z", venue: "BC Place",                city: "Vancouver",        country: "Canadá" },
 
   // GRUPO I
-  { id: "GS41", matchNumber: 41, phase: "Fase de Grupos", group: "I", homeTeam: "França",          awayTeam: "Iraque",              homeFlag: "🇫🇷", awayFlag: "🇮🇶", dateUTC: "2026-06-22T17:00:00Z", venue: "Rose Bowl",                city: "Los Angeles",      country: "EUA" },
-  { id: "GS42", matchNumber: 42, phase: "Fase de Grupos", group: "I", homeTeam: "Senegal",         awayTeam: "Noruega",             homeFlag: "🇸🇳", awayFlag: "🇳🇴", dateUTC: "2026-06-22T14:00:00Z", venue: "Arrowhead Stadium",        city: "Kansas City",      country: "EUA" },
+  { id: "GS41", matchNumber: 41, phase: "Fase de Grupos", group: "I", homeTeam: "Noruega",             awayTeam: "Senegal",                homeFlag: "🇳🇴", awayFlag: "🇸🇳", dateUTC: "2026-06-23T00:00:00Z", venue: "MetLife Stadium",         city: "Nova York",        country: "EUA" },
+  { id: "GS42", matchNumber: 42, phase: "Fase de Grupos", group: "I", homeTeam: "França",              awayTeam: "Iraque",                 homeFlag: "🇫🇷", awayFlag: "🇮🇶", dateUTC: "2026-06-22T21:00:00Z", venue: "Lincoln Financial Field", city: "Filadélfia",       country: "EUA" },
 
   // GRUPO J
-  { id: "GS43", matchNumber: 43, phase: "Fase de Grupos", group: "J", homeTeam: "Argentina",       awayTeam: "Áustria",             homeFlag: "🇦🇷", awayFlag: "🇦🇹", dateUTC: "2026-06-23T20:00:00Z", venue: "Hard Rock Stadium",        city: "Miami",            country: "EUA" },
-  { id: "GS44", matchNumber: 44, phase: "Fase de Grupos", group: "J", homeTeam: "Argélia",         awayTeam: "Jordânia",            homeFlag: "🇩🇿", awayFlag: "🇯🇴", dateUTC: "2026-06-23T23:00:00Z", venue: "Mercedes-Benz Stadium",   city: "Atlanta",          country: "EUA" },
-
-  // GRUPO K
-  { id: "GS45", matchNumber: 45, phase: "Fase de Grupos", group: "K", homeTeam: "Portugal",        awayTeam: "Colômbia",            homeFlag: "🇵🇹", awayFlag: "🇨🇴", dateUTC: "2026-06-24T20:00:00Z", venue: "AT&T Stadium",             city: "Dallas",           country: "EUA" },
-  { id: "GS46", matchNumber: 46, phase: "Fase de Grupos", group: "K", homeTeam: "Uzbequistão",     awayTeam: "Rep. Dem. do Congo",  homeFlag: "🇺🇿", awayFlag: "🇨🇩", dateUTC: "2026-06-24T23:00:00Z", venue: "Levi's Stadium",           city: "São Francisco",    country: "EUA" },
+  { id: "GS43", matchNumber: 43, phase: "Fase de Grupos", group: "J", homeTeam: "Argentina",           awayTeam: "Áustria",                homeFlag: "🇦🇷", awayFlag: "🇦🇹", dateUTC: "2026-06-22T17:00:00Z", venue: "AT&T Stadium",            city: "Dallas",           country: "EUA" },
+  { id: "GS44", matchNumber: 44, phase: "Fase de Grupos", group: "J", homeTeam: "Jordânia",            awayTeam: "Argélia",                homeFlag: "🇯🇴", awayFlag: "🇩🇿", dateUTC: "2026-06-23T03:00:00Z", venue: "Levi's Stadium",          city: "São Francisco",    country: "EUA" },
 
   // GRUPO L
-  { id: "GS47", matchNumber: 47, phase: "Fase de Grupos", group: "L", homeTeam: "Inglaterra",      awayTeam: "Gana",                homeFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", awayFlag: "🇬🇭", dateUTC: "2026-06-25T20:00:00Z", venue: "Levi's Stadium",           city: "São Francisco",    country: "EUA" },
-  { id: "GS48", matchNumber: 48, phase: "Fase de Grupos", group: "L", homeTeam: "Croácia",         awayTeam: "Panamá",              homeFlag: "🇭🇷", awayFlag: "🇵🇦", dateUTC: "2026-06-25T23:00:00Z", venue: "Gillette Stadium",         city: "Boston",           country: "EUA" },
+  { id: "GS45", matchNumber: 45, phase: "Fase de Grupos", group: "L", homeTeam: "Inglaterra",          awayTeam: "Gana",                   homeFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", awayFlag: "🇬🇭", dateUTC: "2026-06-23T20:00:00Z", venue: "Gillette Stadium",        city: "Boston",           country: "EUA" },
+  { id: "GS46", matchNumber: 46, phase: "Fase de Grupos", group: "L", homeTeam: "Panamá",              awayTeam: "Croácia",                homeFlag: "🇵🇦", awayFlag: "🇭🇷", dateUTC: "2026-06-23T23:00:00Z", venue: "BMO Field",               city: "Toronto",          country: "Canadá" },
+
+  // GRUPO K
+  { id: "GS47", matchNumber: 47, phase: "Fase de Grupos", group: "K", homeTeam: "Portugal",            awayTeam: "Uzbequistão",            homeFlag: "🇵🇹", awayFlag: "🇺🇿", dateUTC: "2026-06-23T17:00:00Z", venue: "NRG Stadium",             city: "Houston",          country: "EUA" },
+  { id: "GS48", matchNumber: 48, phase: "Fase de Grupos", group: "K", homeTeam: "Colômbia",            awayTeam: "Rep. Dem. do Congo",    homeFlag: "🇨🇴", awayFlag: "🇨🇩", dateUTC: "2026-06-24T02:00:00Z", venue: "Estadio Akron",           city: "Guadalajara",      country: "México" },
 
   // ===========================================================
-  // FASE DE GRUPOS — RODADA 3 (simultâneos por grupo)
+  // FASE DE GRUPOS — RODADA 3  (jogos #49–#72, simultâneos por grupo)
   // ===========================================================
-
-  // GRUPO A (simultâneos)
-  { id: "GS49", matchNumber: 49, phase: "Fase de Grupos", group: "A", homeTeam: "México",          awayTeam: "República Tcheca",    homeFlag: "🇲🇽", awayFlag: "🇨🇿", dateUTC: "2026-06-24T20:00:00Z", venue: "Estadio Azteca",           city: "Cidade do México", country: "México" },
-  { id: "GS50", matchNumber: 50, phase: "Fase de Grupos", group: "A", homeTeam: "Coreia do Sul",   awayTeam: "África do Sul",       homeFlag: "🇰🇷", awayFlag: "🇿🇦", dateUTC: "2026-06-24T20:00:00Z", venue: "AT&T Stadium",             city: "Dallas",           country: "EUA" },
-
-  // GRUPO B (simultâneos)
-  { id: "GS51", matchNumber: 51, phase: "Fase de Grupos", group: "B", homeTeam: "Canadá",          awayTeam: "Suíça",               homeFlag: "🇨🇦", awayFlag: "🇨🇭", dateUTC: "2026-06-25T20:00:00Z", venue: "BMO Field",                city: "Toronto",          country: "Canadá" },
-  { id: "GS52", matchNumber: 52, phase: "Fase de Grupos", group: "B", homeTeam: "Catar",           awayTeam: "Bósnia e Herzegovina",homeFlag: "🇶🇦", awayFlag: "🇧🇦", dateUTC: "2026-06-25T20:00:00Z", venue: "NRG Stadium",              city: "Houston",          country: "EUA" },
-
-  // GRUPO D (simultâneos)
-  { id: "GS53", matchNumber: 53, phase: "Fase de Grupos", group: "D", homeTeam: "EUA",             awayTeam: "Turquia",             homeFlag: "🇺🇸", awayFlag: "🇹🇷", dateUTC: "2026-06-25T20:00:00Z", venue: "Arrowhead Stadium",        city: "Kansas City",      country: "EUA" },
-  { id: "GS54", matchNumber: 54, phase: "Fase de Grupos", group: "D", homeTeam: "Austrália",       awayTeam: "Paraguai",            homeFlag: "🇦🇺", awayFlag: "🇵🇾", dateUTC: "2026-06-25T20:00:00Z", venue: "BC Place",                 city: "Vancouver",        country: "Canadá" },
 
   // GRUPO C (simultâneos)
-  { id: "GS55", matchNumber: 55, phase: "Fase de Grupos", group: "C", homeTeam: "Brasil",          awayTeam: "Escócia",             homeFlag: "🇧🇷", awayFlag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", dateUTC: "2026-06-26T20:00:00Z", venue: "MetLife Stadium",          city: "Nova York",        country: "EUA" },
-  { id: "GS56", matchNumber: 56, phase: "Fase de Grupos", group: "C", homeTeam: "Marrocos",        awayTeam: "Haiti",               homeFlag: "🇲🇦", awayFlag: "🇭🇹", dateUTC: "2026-06-26T20:00:00Z", venue: "Levi's Stadium",           city: "São Francisco",    country: "EUA" },
+  { id: "GS49", matchNumber: 49, phase: "Fase de Grupos", group: "C", homeTeam: "Escócia",             awayTeam: "Brasil",                 homeFlag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", awayFlag: "🇧🇷", dateUTC: "2026-06-24T22:00:00Z", venue: "Hard Rock Stadium",       city: "Miami",            country: "EUA" },
+  { id: "GS50", matchNumber: 50, phase: "Fase de Grupos", group: "C", homeTeam: "Marrocos",            awayTeam: "Haiti",                  homeFlag: "🇲🇦", awayFlag: "🇭🇹", dateUTC: "2026-06-24T22:00:00Z", venue: "Mercedes-Benz Stadium",  city: "Atlanta",          country: "EUA" },
+
+  // GRUPO B (simultâneos)
+  { id: "GS51", matchNumber: 51, phase: "Fase de Grupos", group: "B", homeTeam: "Suíça",              awayTeam: "Canadá",                 homeFlag: "🇨🇭", awayFlag: "🇨🇦", dateUTC: "2026-06-24T19:00:00Z", venue: "BC Place",                city: "Vancouver",        country: "Canadá" },
+  { id: "GS52", matchNumber: 52, phase: "Fase de Grupos", group: "B", homeTeam: "Bósnia e Herzegovina", awayTeam: "Catar",               homeFlag: "🇧🇦", awayFlag: "🇶🇦", dateUTC: "2026-06-24T19:00:00Z", venue: "Lumen Field",             city: "Seattle",          country: "EUA" },
+
+  // GRUPO A (simultâneos)
+  { id: "GS53", matchNumber: 53, phase: "Fase de Grupos", group: "A", homeTeam: "República Tcheca",   awayTeam: "México",                 homeFlag: "🇨🇿", awayFlag: "🇲🇽", dateUTC: "2026-06-25T01:00:00Z", venue: "Estadio Azteca",          city: "Cidade do México", country: "México" },
+  { id: "GS54", matchNumber: 54, phase: "Fase de Grupos", group: "A", homeTeam: "África do Sul",       awayTeam: "Coreia do Sul",          homeFlag: "🇿🇦", awayFlag: "🇰🇷", dateUTC: "2026-06-25T01:00:00Z", venue: "Estadio BBVA",            city: "Monterrey",        country: "México" },
 
   // GRUPO E (simultâneos)
-  { id: "GS57", matchNumber: 57, phase: "Fase de Grupos", group: "E", homeTeam: "Alemanha",        awayTeam: "Equador",             homeFlag: "🇩🇪", awayFlag: "🇪🇨", dateUTC: "2026-06-26T20:00:00Z", venue: "Rose Bowl",                city: "Los Angeles",      country: "EUA" },
-  { id: "GS58", matchNumber: 58, phase: "Fase de Grupos", group: "E", homeTeam: "Costa do Marfim", awayTeam: "Curaçao",             homeFlag: "🇨🇮", awayFlag: "🇨🇼", dateUTC: "2026-06-26T20:00:00Z", venue: "Estadio BBVA",             city: "Monterrey",        country: "México" },
+  { id: "GS55", matchNumber: 55, phase: "Fase de Grupos", group: "E", homeTeam: "Curaçao",             awayTeam: "Costa do Marfim",        homeFlag: "🇨🇼", awayFlag: "🇨🇮", dateUTC: "2026-06-25T20:00:00Z", venue: "Lincoln Financial Field", city: "Filadélfia",       country: "EUA" },
+  { id: "GS56", matchNumber: 56, phase: "Fase de Grupos", group: "E", homeTeam: "Equador",             awayTeam: "Alemanha",               homeFlag: "🇪🇨", awayFlag: "🇩🇪", dateUTC: "2026-06-25T20:00:00Z", venue: "MetLife Stadium",         city: "Nova York",        country: "EUA" },
 
   // GRUPO F (simultâneos)
-  { id: "GS59", matchNumber: 59, phase: "Fase de Grupos", group: "F", homeTeam: "Países Baixos",   awayTeam: "Tunísia",             homeFlag: "🇳🇱", awayFlag: "🇹🇳", dateUTC: "2026-06-26T20:00:00Z", venue: "SoFi Stadium",             city: "Los Angeles",      country: "EUA" },
-  { id: "GS60", matchNumber: 60, phase: "Fase de Grupos", group: "F", homeTeam: "Japão",           awayTeam: "Suécia",              homeFlag: "🇯🇵", awayFlag: "🇸🇪", dateUTC: "2026-06-26T20:00:00Z", venue: "Estadio Akron",            city: "Guadalajara",      country: "México" },
+  { id: "GS57", matchNumber: 57, phase: "Fase de Grupos", group: "F", homeTeam: "Japão",               awayTeam: "Suécia",                 homeFlag: "🇯🇵", awayFlag: "🇸🇪", dateUTC: "2026-06-25T23:00:00Z", venue: "AT&T Stadium",            city: "Dallas",           country: "EUA" },
+  { id: "GS58", matchNumber: 58, phase: "Fase de Grupos", group: "F", homeTeam: "Tunísia",             awayTeam: "Países Baixos",          homeFlag: "🇹🇳", awayFlag: "🇳🇱", dateUTC: "2026-06-25T23:00:00Z", venue: "Arrowhead Stadium",       city: "Kansas City",      country: "EUA" },
 
-  // GRUPO G (simultâneos — confirmados pela FIFA)
-  { id: "GS61", matchNumber: 61, phase: "Fase de Grupos", group: "G", homeTeam: "Egito",           awayTeam: "Irã",                 homeFlag: "🇪🇬", awayFlag: "🇮🇷", dateUTC: "2026-06-26T20:00:00Z", venue: "Lumen Field",              city: "Seattle",          country: "EUA" },
-  { id: "GS62", matchNumber: 62, phase: "Fase de Grupos", group: "G", homeTeam: "Nova Zelândia",   awayTeam: "Bélgica",             homeFlag: "🇳🇿", awayFlag: "🇧🇪", dateUTC: "2026-06-26T20:00:00Z", venue: "BC Place",                 city: "Vancouver",        country: "Canadá" },
-
-  // GRUPO H (simultâneos)
-  { id: "GS63", matchNumber: 63, phase: "Fase de Grupos", group: "H", homeTeam: "Espanha",         awayTeam: "Uruguai",             homeFlag: "🇪🇸", awayFlag: "🇺🇾", dateUTC: "2026-06-27T20:00:00Z", venue: "MetLife Stadium",          city: "Nova York",        country: "EUA" },
-  { id: "GS64", matchNumber: 64, phase: "Fase de Grupos", group: "H", homeTeam: "Cabo Verde",      awayTeam: "Arábia Saudita",      homeFlag: "🇨🇻", awayFlag: "🇸🇦", dateUTC: "2026-06-27T20:00:00Z", venue: "Hard Rock Stadium",        city: "Miami",            country: "EUA" },
+  // GRUPO D (simultâneos)
+  { id: "GS59", matchNumber: 59, phase: "Fase de Grupos", group: "D", homeTeam: "Turquia",             awayTeam: "EUA",                    homeFlag: "🇹🇷", awayFlag: "🇺🇸", dateUTC: "2026-06-26T02:00:00Z", venue: "SoFi Stadium",            city: "Los Angeles",      country: "EUA" },
+  { id: "GS60", matchNumber: 60, phase: "Fase de Grupos", group: "D", homeTeam: "Paraguai",            awayTeam: "Austrália",              homeFlag: "🇵🇾", awayFlag: "🇦🇺", dateUTC: "2026-06-26T02:00:00Z", venue: "Levi's Stadium",          city: "São Francisco",    country: "EUA" },
 
   // GRUPO I (simultâneos)
-  { id: "GS65", matchNumber: 65, phase: "Fase de Grupos", group: "I", homeTeam: "França",          awayTeam: "Noruega",             homeFlag: "🇫🇷", awayFlag: "🇳🇴", dateUTC: "2026-06-27T20:00:00Z", venue: "Rose Bowl",                city: "Los Angeles",      country: "EUA" },
-  { id: "GS66", matchNumber: 66, phase: "Fase de Grupos", group: "I", homeTeam: "Senegal",         awayTeam: "Iraque",              homeFlag: "🇸🇳", awayFlag: "🇮🇶", dateUTC: "2026-06-27T20:00:00Z", venue: "AT&T Stadium",             city: "Dallas",           country: "EUA" },
+  { id: "GS61", matchNumber: 61, phase: "Fase de Grupos", group: "I", homeTeam: "Noruega",             awayTeam: "França",                 homeFlag: "🇳🇴", awayFlag: "🇫🇷", dateUTC: "2026-06-26T19:00:00Z", venue: "Gillette Stadium",        city: "Boston",           country: "EUA" },
+  { id: "GS62", matchNumber: 62, phase: "Fase de Grupos", group: "I", homeTeam: "Senegal",             awayTeam: "Iraque",                 homeFlag: "🇸🇳", awayFlag: "🇮🇶", dateUTC: "2026-06-26T19:00:00Z", venue: "BMO Field",               city: "Toronto",          country: "Canadá" },
 
-  // GRUPO J (simultâneos)
-  { id: "GS67", matchNumber: 67, phase: "Fase de Grupos", group: "J", homeTeam: "Argentina",       awayTeam: "Jordânia",            homeFlag: "🇦🇷", awayFlag: "🇯🇴", dateUTC: "2026-06-28T20:00:00Z", venue: "Hard Rock Stadium",        city: "Miami",            country: "EUA" },
-  { id: "GS68", matchNumber: 68, phase: "Fase de Grupos", group: "J", homeTeam: "Argélia",         awayTeam: "Áustria",             homeFlag: "🇩🇿", awayFlag: "🇦🇹", dateUTC: "2026-06-28T20:00:00Z", venue: "Mercedes-Benz Stadium",   city: "Atlanta",          country: "EUA" },
+  // GRUPO G (simultâneos)
+  { id: "GS63", matchNumber: 63, phase: "Fase de Grupos", group: "G", homeTeam: "Egito",               awayTeam: "Irã",                    homeFlag: "🇪🇬", awayFlag: "🇮🇷", dateUTC: "2026-06-27T03:00:00Z", venue: "Lumen Field",             city: "Seattle",          country: "EUA" },
+  { id: "GS64", matchNumber: 64, phase: "Fase de Grupos", group: "G", homeTeam: "Nova Zelândia",       awayTeam: "Bélgica",                homeFlag: "🇳🇿", awayFlag: "🇧🇪", dateUTC: "2026-06-27T03:00:00Z", venue: "BC Place",                city: "Vancouver",        country: "Canadá" },
 
-  // GRUPO K (simultâneos)
-  { id: "GS69", matchNumber: 69, phase: "Fase de Grupos", group: "K", homeTeam: "Portugal",        awayTeam: "Rep. Dem. do Congo",  homeFlag: "🇵🇹", awayFlag: "🇨🇩", dateUTC: "2026-06-29T20:00:00Z", venue: "Estadio BBVA",             city: "Monterrey",        country: "México" },
-  { id: "GS70", matchNumber: 70, phase: "Fase de Grupos", group: "K", homeTeam: "Colômbia",        awayTeam: "Uzbequistão",         homeFlag: "🇨🇴", awayFlag: "🇺🇿", dateUTC: "2026-06-29T20:00:00Z", venue: "Lincoln Financial Field",  city: "Filadélfia",       country: "EUA" },
+  // GRUPO H (simultâneos)
+  { id: "GS65", matchNumber: 65, phase: "Fase de Grupos", group: "H", homeTeam: "Cabo Verde",          awayTeam: "Arábia Saudita",         homeFlag: "🇨🇻", awayFlag: "🇸🇦", dateUTC: "2026-06-27T00:00:00Z", venue: "NRG Stadium",             city: "Houston",          country: "EUA" },
+  { id: "GS66", matchNumber: 66, phase: "Fase de Grupos", group: "H", homeTeam: "Uruguai",             awayTeam: "Espanha",                homeFlag: "🇺🇾", awayFlag: "🇪🇸", dateUTC: "2026-06-27T00:00:00Z", venue: "Estadio Akron",           city: "Guadalajara",      country: "México" },
 
   // GRUPO L (simultâneos)
-  { id: "GS71", matchNumber: 71, phase: "Fase de Grupos", group: "L", homeTeam: "Inglaterra",      awayTeam: "Panamá",              homeFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", awayFlag: "🇵🇦", dateUTC: "2026-06-30T20:00:00Z", venue: "Lumen Field",              city: "Seattle",          country: "EUA" },
-  { id: "GS72", matchNumber: 72, phase: "Fase de Grupos", group: "L", homeTeam: "Gana",            awayTeam: "Croácia",             homeFlag: "🇬🇭", awayFlag: "🇭🇷", dateUTC: "2026-06-30T20:00:00Z", venue: "NRG Stadium",              city: "Houston",          country: "EUA" },
+  { id: "GS67", matchNumber: 67, phase: "Fase de Grupos", group: "L", homeTeam: "Panamá",              awayTeam: "Inglaterra",             homeFlag: "🇵🇦", awayFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", dateUTC: "2026-06-27T21:00:00Z", venue: "MetLife Stadium",         city: "Nova York",        country: "EUA" },
+  { id: "GS68", matchNumber: 68, phase: "Fase de Grupos", group: "L", homeTeam: "Croácia",             awayTeam: "Gana",                   homeFlag: "🇭🇷", awayFlag: "🇬🇭", dateUTC: "2026-06-27T21:00:00Z", venue: "Lincoln Financial Field", city: "Filadélfia",       country: "EUA" },
+
+  // GRUPO J (simultâneos)
+  { id: "GS69", matchNumber: 69, phase: "Fase de Grupos", group: "J", homeTeam: "Argélia",             awayTeam: "Áustria",                homeFlag: "🇩🇿", awayFlag: "🇦🇹", dateUTC: "2026-06-28T02:00:00Z", venue: "Arrowhead Stadium",       city: "Kansas City",      country: "EUA" },
+  { id: "GS70", matchNumber: 70, phase: "Fase de Grupos", group: "J", homeTeam: "Jordânia",            awayTeam: "Argentina",              homeFlag: "🇯🇴", awayFlag: "🇦🇷", dateUTC: "2026-06-28T02:00:00Z", venue: "AT&T Stadium",            city: "Dallas",           country: "EUA" },
+
+  // GRUPO K (simultâneos)
+  { id: "GS71", matchNumber: 71, phase: "Fase de Grupos", group: "K", homeTeam: "Colômbia",            awayTeam: "Portugal",               homeFlag: "🇨🇴", awayFlag: "🇵🇹", dateUTC: "2026-06-27T23:30:00Z", venue: "Hard Rock Stadium",       city: "Miami",            country: "EUA" },
+  { id: "GS72", matchNumber: 72, phase: "Fase de Grupos", group: "K", homeTeam: "Rep. Dem. do Congo",  awayTeam: "Uzbequistão",            homeFlag: "🇨🇩", awayFlag: "🇺🇿", dateUTC: "2026-06-27T23:30:00Z", venue: "Mercedes-Benz Stadium",  city: "Atlanta",          country: "EUA" },
 
   // ===========================================================
   // OITAVAS DE FINAL — Rodada de 32 (16 jogos)
