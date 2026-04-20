@@ -108,16 +108,20 @@ export async function POST(request: NextRequest) {
         await userBatch.commit();
       }
 
-      // Recalcula ranking
-      const usersSnap = await db
-        .collection("users")
-        .orderBy("totalPoints", "desc")
-        .orderBy("exactHits", "desc")
-        .get();
+      // Recalcula ranking (ordena em memória para não depender de índice composto)
+      const usersSnap = await db.collection("users").get();
 
       if (usersSnap.docs.length > 0) {
+        const sorted = [...usersSnap.docs].sort((a, b) => {
+          const aData = a.data();
+          const bData = b.data();
+          const pointsDiff = (bData.totalPoints ?? 0) - (aData.totalPoints ?? 0);
+          if (pointsDiff !== 0) return pointsDiff;
+          return (bData.exactHits ?? 0) - (aData.exactHits ?? 0);
+        });
+
         const rankBatch = db.batch();
-        usersSnap.docs.forEach((u, i) => {
+        sorted.forEach((u, i) => {
           rankBatch.update(u.ref, { rank: i + 1 });
         });
         await rankBatch.commit();
