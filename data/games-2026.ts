@@ -103,7 +103,7 @@ export const GAMES_2026: GameSeed[] = [
 
   // GRUPO B
   { id: "GS27", matchNumber: 27, phase: "Fase de Grupos", group: "B", homeTeam: "Canadá",          awayTeam: "Catar",               homeFlag: "🇨🇦", awayFlag: "🇶🇦", dateUTC: "2026-06-19T17:00:00Z", venue: "BMO Field",                city: "Toronto",          country: "Canadá" },
-  { id: "GS28", matchNumber: 28, phase: "Fase de Grupos", group: "B", homeTeam: "Bósnia e Herzegovina", awayTeam: "Suíça",          homeFlag: "🇧🇦", awayFlag: "🇨🇭", dateUTC: "2026-06-19T20:00:00Z", venue: "Arrowhead Stadium",        city: "Kansas City",      country: "EUA" },
+  { id: "GS28", matchNumber: 28, phase: "Fase de Grupos", group: "B", homeTeam: "Bósnia e Herzegovina", awayTeam: "Suíça",          homeFlag: "🇧🇦", awayFlag: "🇨🇭", dateUTC: "2026-06-18T20:00:00Z", venue: "Arrowhead Stadium",        city: "Kansas City",      country: "EUA" },
 
   // GRUPO D
   { id: "GS29", matchNumber: 29, phase: "Fase de Grupos", group: "D", homeTeam: "EUA",             awayTeam: "Austrália",           homeFlag: "🇺🇸", awayFlag: "🇦🇺", dateUTC: "2026-06-20T20:00:00Z", venue: "AT&T Stadium",             city: "Dallas",           country: "EUA" },
