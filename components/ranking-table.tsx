@@ -31,14 +31,12 @@ export function RankingTable({ users, currentUserId }: RankingTableProps) {
     setLoadingBets(true);
 
     try {
-      // Carrega apostas de jogos já encerrados
       const betsQuery = query(
         collection(db, "bets").withConverter(betConverter),
         where("userId", "==", user.uid)
       );
       const gamesQuery = query(
         collection(db, "games").withConverter(gameConverter),
-        where("status", "==", "finished"),
         orderBy("matchNumber", "asc")
       );
 
@@ -48,9 +46,9 @@ export function RankingTable({ users, currentUserId }: RankingTableProps) {
       ]);
 
       const betsMap = new Map(betsSnap.docs.map((d) => [d.data().gameId, d.data()]));
-      const finishedGames = gamesSnap.docs.map((d) => d.data());
+      const allGames = gamesSnap.docs.map((d) => d.data());
 
-      const combined = finishedGames
+      const combined = allGames
         .filter((g) => betsMap.has(g.id))
         .map((g) => ({ bet: betsMap.get(g.id)!, game: g }));
 
@@ -162,41 +160,55 @@ export function RankingTable({ users, currentUserId }: RankingTableProps) {
             </div>
           ) : userBets.length === 0 ? (
             <p className="py-4 text-center text-sm text-muted-foreground">
-              Sem apostas em jogos encerrados.
+              Nenhuma aposta registrada.
             </p>
           ) : (
-            <div className="space-y-2">
-              {userBets.map(({ bet, game }) => (
+            <div className="space-y-1.5">
+              {userBets.map(({ bet, game }) => {
+                const isFinished = game.status === "finished";
+                const statusLabel = game.status === "locked" ? "Travado" : game.status === "finished" ? "Encerrado" : "Aberto";
+                return (
                 <div
                   key={bet.id}
-                  className="flex items-center justify-between rounded-md border p-2 text-sm"
+                  className={cn(
+                    "flex items-center justify-between rounded-md border p-2.5 text-sm",
+                    isFinished ? "bg-muted/30" : ""
+                  )}
                 >
-                  <div>
-                    <span className="font-medium">{game.homeTeam}</span>
-                    <span className="mx-1 text-muted-foreground">
-                      {game.homeScore} × {game.awayScore}
-                    </span>
-                    <span className="font-medium">{game.awayTeam}</span>
-                    <div className="text-xs text-muted-foreground">
-                      Palpite: {bet.homeScore} × {bet.awayScore}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1 flex-wrap">
+                      <span className="text-xs text-muted-foreground shrink-0">#{game.matchNumber}</span>
+                      <span className="font-semibold">{game.homeTeam}</span>
+                      <span className="text-muted-foreground">×</span>
+                      <span className="font-semibold">{game.awayTeam}</span>
+                      <span className={cn(
+                        "text-xs px-1.5 py-0.5 rounded-full border",
+                        isFinished ? "bg-muted text-muted-foreground" : "border-primary/30 text-primary"
+                      )}>
+                        {statusLabel}
+                      </span>
+                    </div>
+                    <div className="mt-0.5 text-xs text-muted-foreground">
+                      Palpite: <strong>{bet.homeScore} × {bet.awayScore}</strong>
+                      {isFinished && (
+                        <> · Resultado: <strong>{game.homeScore} × {game.awayScore}</strong></>
+                      )}
                     </div>
                   </div>
-                  {bet.points !== null && (
-                    <span
-                      className={cn(
+                  <div className="ml-3 shrink-0">
+                    {isFinished && bet.points !== null ? (
+                      <span className={cn(
                         "font-bold text-sm",
-                        bet.points >= 20
-                          ? "text-hit-exact"
-                          : bet.points > 0
-                          ? "text-green-600"
-                          : "text-destructive"
-                      )}
-                    >
-                      +{bet.points}
-                    </span>
-                  )}
+                        bet.points >= 20 ? "text-hit-exact" : bet.points > 0 ? "text-green-600" : "text-destructive"
+                      )}>
+                        +{bet.points}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </DialogContent>
