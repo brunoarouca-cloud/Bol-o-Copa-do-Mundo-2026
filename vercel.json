@@ -8,5 +8,16 @@
       "path": "/api/cron/live-scores",
       "schedule": "* * * * *"
     }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    }
   ]
 }
