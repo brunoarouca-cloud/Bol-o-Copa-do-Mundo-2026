@@ -15,6 +15,7 @@ import { gameConverter, scoringConverter } from "@/lib/firebase/converters";
 import { GameCard } from "@/components/game-card";
 import { useAuth } from "@/hooks/use-auth";
 import { useBets } from "@/hooks/use-bets";
+import { useLivePoll } from "@/hooks/use-live-poll";
 import { Button } from "@/components/ui/button";
 import { Loader2, ChevronDown, FileDown, Trash2 } from "lucide-react";
 import { format } from "date-fns";
@@ -120,6 +121,7 @@ function FilterPill({ label, value, options, onChange, disabled }: FilterPillPro
 export default function ApostasPage() {
   const { user, userDoc } = useAuth();
   const { bets, loading: betsLoading, getBetForGame } = useBets(user?.uid ?? null);
+  useLivePoll(); // Aciona polling de placar ao vivo enquanto houver jogos "live"
 
   const [games, setGames] = useState<Game[]>([]);
   const [settings, setSettings] = useState<ScoringSettings | null>(null);

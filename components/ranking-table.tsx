@@ -14,14 +14,15 @@ import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
 import { betConverter, gameConverter } from "@/lib/firebase/converters";
 import type { UserDoc, Bet, Game } from "@/types";
-import { Loader2, Eye } from "lucide-react";
+import { Loader2, Eye, Radio } from "lucide-react";
 
 interface RankingTableProps {
   users: UserDoc[];
   currentUserId?: string;
+  hasLiveGames?: boolean;
 }
 
-export function RankingTable({ users, currentUserId }: RankingTableProps) {
+export function RankingTable({ users, currentUserId, hasLiveGames }: RankingTableProps) {
   const [viewingUser, setViewingUser] = useState<UserDoc | null>(null);
   const [userBets, setUserBets] = useState<{ bet: Bet; game: Game }[]>([]);
   const [loadingBets, setLoadingBets] = useState(false);
@@ -48,9 +49,9 @@ export function RankingTable({ users, currentUserId }: RankingTableProps) {
       const betsMap = new Map(betsSnap.docs.map((d) => [d.data().gameId, d.data()]));
       const allGames = gamesSnap.docs.map((d) => d.data());
 
-      // Mostra só jogos encerrados para não revelar palpites abertos de outros usuários
+      // Mostra jogos encerrados e ao vivo — palpites de jogos futuros/abertos ficam ocultos
       const combined = allGames
-        .filter((g) => g.status === "finished" && betsMap.has(g.id))
+        .filter((g) => (g.status === "finished" || g.status === "live") && betsMap.has(g.id))
         .map((g) => ({ bet: betsMap.get(g.id)!, game: g }));
 
       setUserBets(combined);
@@ -65,6 +66,14 @@ export function RankingTable({ users, currentUserId }: RankingTableProps) {
 
   return (
     <>
+      {hasLiveGames && (
+        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400">
+          <Radio className="h-3.5 w-3.5 shrink-0 animate-pulse" />
+          <span className="font-medium">Ao vivo</span>
+          <span className="text-red-600/80 dark:text-red-400/80">· Pontuação sendo atualizada em tempo real</span>
+        </div>
+      )}
+
       <div className="overflow-hidden rounded-lg border">
         <table className="w-full text-sm" role="grid" aria-label="Tabela de classificação">
           <thead className="bg-muted/50">
@@ -167,13 +176,15 @@ export function RankingTable({ users, currentUserId }: RankingTableProps) {
             <div className="space-y-1.5">
               {userBets.map(({ bet, game }) => {
                 const isFinished = game.status === "finished";
-                const statusLabel = game.status === "locked" ? "Travado" : game.status === "finished" ? "Encerrado" : "Aberto";
+                const isLive = game.status === "live";
+                const statusLabel = isFinished ? "Encerrado" : isLive ? "Ao vivo" : "Aberto";
                 return (
                 <div
                   key={bet.id}
                   className={cn(
                     "flex items-center justify-between rounded-md border p-2.5 text-sm",
-                    isFinished ? "bg-muted/30" : ""
+                    isFinished ? "bg-muted/30" : "",
+                    isLive ? "border-red-200 bg-red-50/30 dark:border-red-900 dark:bg-red-950/10" : ""
                   )}
                 >
                   <div className="min-w-0 flex-1">
@@ -183,26 +194,31 @@ export function RankingTable({ users, currentUserId }: RankingTableProps) {
                       <span className="text-muted-foreground">×</span>
                       <span className="font-semibold">{game.awayTeam}</span>
                       <span className={cn(
-                        "text-xs px-1.5 py-0.5 rounded-full border",
-                        isFinished ? "bg-muted text-muted-foreground" : "border-primary/30 text-primary"
+                        "inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full border",
+                        isFinished ? "bg-muted text-muted-foreground" :
+                        isLive ? "border-red-300 text-red-600 dark:border-red-800 dark:text-red-400" :
+                        "border-primary/30 text-primary"
                       )}>
+                        {isLive && <Radio className="h-2.5 w-2.5 animate-pulse" />}
                         {statusLabel}
                       </span>
                     </div>
                     <div className="mt-0.5 text-xs text-muted-foreground">
                       Palpite: <strong>{bet.homeScore} × {bet.awayScore}</strong>
-                      {isFinished && (
-                        <> · Resultado: <strong>{game.homeScore} × {game.awayScore}</strong></>
+                      {(isFinished || isLive) && game.homeScore !== null && (
+                        <> · Parcial: <strong>{game.homeScore} × {game.awayScore}</strong></>
                       )}
                     </div>
                   </div>
                   <div className="ml-3 shrink-0">
-                    {isFinished && bet.points !== null ? (
+                    {(isFinished || isLive) && bet.points !== null ? (
                       <span className={cn(
                         "font-bold text-sm",
                         bet.points >= 20 ? "text-hit-exact" : bet.points > 0 ? "text-green-600" : "text-destructive"
                       )}>
-                        +{bet.points}
+                        {isLive ? "~" : "+"}{bet.points}
+                        {isLive && <span className="ml-0.5 text-xs font-normal text-muted-foreground">pts</span>}
+                        {isFinished && <span className="ml-0.5 text-xs font-normal text-muted-foreground">pts</span>}
                       </span>
                     ) : (
                       <span className="text-xs text-muted-foreground">—</span>

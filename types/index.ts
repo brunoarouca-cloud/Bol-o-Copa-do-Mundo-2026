@@ -9,7 +9,7 @@ export type GamePhase =
   | "Terceiro Lugar"
   | "Final";
 
-export type GameStatus = "upcoming" | "locked" | "finished";
+export type GameStatus = "upcoming" | "locked" | "live" | "finished";
 
 export interface Game {
   id: string; // "GS01" | "R32_01" | "QF1" | ...

@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { gameId, homeScore, awayScore } = parsed.data;
+    const { gameId, homeScore, awayScore, isLive } = parsed.data;
     const db = getAdminFirestore();
 
     const gameRef = db.collection("games").doc(gameId);
@@ -51,7 +51,8 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Salva o resultado (passo crítico — deve sempre funcionar)
-    await gameRef.update({ homeScore, awayScore, status: "finished" });
+    const newStatus = isLive ? "live" : "finished";
+    await gameRef.update({ homeScore, awayScore, status: newStatus });
 
     // 2. Recalcula pontos (best-effort — não falha o request se der erro)
     try {

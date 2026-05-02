@@ -40,6 +40,8 @@ export const resultSchema = z.object({
   gameId: z.string().min(1),
   homeScore: z.number().int().min(0).max(30),
   awayScore: z.number().int().min(0).max(30),
+  /** Se true, define status = "live" em vez de "finished" */
+  isLive: z.boolean().optional(),
 });
 
 export const scoringSettingsSchema = z.object({

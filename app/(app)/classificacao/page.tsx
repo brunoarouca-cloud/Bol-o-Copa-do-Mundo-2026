@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import { useRanking } from "@/hooks/use-ranking";
 import { useAuth } from "@/hooks/use-auth";
+import { useLivePoll } from "@/hooks/use-live-poll";
 import { RankingTable } from "@/components/ranking-table";
 import { Loader2 } from "lucide-react";
 
 export default function ClassificacaoPage() {
   const { user } = useAuth();
   const { users, loading } = useRanking();
+  const { hasLiveGames } = useLivePoll();
 
   if (loading) {
     return (
@@ -27,7 +28,7 @@ export default function ClassificacaoPage() {
         </p>
       </div>
 
-      <RankingTable users={users} currentUserId={user?.uid} />
+      <RankingTable users={users} currentUserId={user?.uid} hasLiveGames={hasLiveGames} />
     </div>
   );
 }

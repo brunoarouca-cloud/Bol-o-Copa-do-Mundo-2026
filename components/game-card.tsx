@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { useGameLockCountdown } from "@/hooks/use-countdown";
 import { formatGameDateShort } from "@/lib/time";
 import { useBetSave } from "@/hooks/use-bets";
-import { MapPin, Clock } from "lucide-react";
+import { MapPin, Clock, Radio } from "lucide-react";
 import type { Game, Bet } from "@/types";
 
 interface GameCardProps {
@@ -21,12 +21,14 @@ interface GameCardProps {
 const STATUS_LABELS: Record<string, string> = {
   upcoming: "Aberto",
   locked: "Travado",
+  live: "Ao vivo",
   finished: "Encerrado",
 };
 
-const STATUS_VARIANTS: Record<string, "open" | "locked" | "finished"> = {
+const STATUS_VARIANTS: Record<string, "open" | "locked" | "live" | "finished"> = {
   upcoming: "open",
   locked: "locked",
+  live: "live",
   finished: "finished",
 };
 
@@ -67,6 +69,7 @@ export function GameCard({
   }, [bet?.homeScore, bet?.awayScore]);
 
   const isReadOnly = game.status !== "upcoming";
+  const isLive = game.status === "live";
 
   const handleSave = useCallback(async () => {
     const h = parseInt(homeInput);
@@ -94,6 +97,7 @@ export function GameCard({
       className={cn(
         "transition-all",
         getHitClass(bet?.points ?? null),
+        isLive && "ring-2 ring-red-500/60",
         saving && "opacity-70"
       )}
     >
@@ -104,7 +108,8 @@ export function GameCard({
             {game.phase}
             {game.group ? ` · Grupo ${game.group}` : ""}
           </span>
-          <Badge variant={STATUS_VARIANTS[game.status]}>
+          <Badge variant={STATUS_VARIANTS[game.status]} className={cn(isLive && "gap-1")}>
+            {isLive && <Radio className="h-3 w-3 animate-pulse" />}
             {STATUS_LABELS[game.status]}
           </Badge>
         </div>
@@ -123,8 +128,11 @@ export function GameCard({
 
           {/* Inputs de placar */}
           <div className="flex items-center gap-1">
-            {game.status === "finished" && game.homeScore !== null ? (
-              <div className="flex items-center gap-1 text-lg font-bold">
+            {(game.status === "finished" || isLive) && game.homeScore !== null ? (
+              <div className={cn(
+                "flex items-center gap-1 text-lg font-bold",
+                isLive && "text-red-600 dark:text-red-400"
+              )}>
                 <span>{game.homeScore}</span>
                 <span className="text-muted-foreground">×</span>
                 <span>{game.awayScore}</span>
@@ -188,7 +196,7 @@ export function GameCard({
         </div>
 
         {/* Aposta do usuário vs resultado */}
-        {game.status === "finished" && bet && (
+        {(game.status === "finished" || isLive) && bet && (
           <div className="mt-2 text-center text-xs">
             <span className="text-muted-foreground">Sua aposta: </span>
             <span className="font-medium">
@@ -205,7 +213,8 @@ export function GameCard({
                     : "text-destructive"
                 )}
               >
-                +{bet.points}pts
+                {isLive ? "~" : "+"}{bet.points}pts
+                {isLive && <span className="ml-1 text-xs font-normal text-muted-foreground">(parcial)</span>}
               </span>
             )}
           </div>

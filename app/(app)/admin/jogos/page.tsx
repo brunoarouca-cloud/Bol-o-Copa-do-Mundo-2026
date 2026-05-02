@@ -10,13 +10,14 @@ import { Badge } from "@/components/ui/badge";
 import { auth } from "@/lib/firebase/client";
 import { toast } from "sonner";
 import { formatGameDate } from "@/lib/time";
-import { Loader2, CheckCircle2, Trash2 } from "lucide-react";
+import { Loader2, CheckCircle2, Trash2, Radio } from "lucide-react";
 import type { Game } from "@/types";
 
-const STATUS_LABELS = { upcoming: "Aberto", locked: "Travado", finished: "Encerrado" };
-const STATUS_VARIANTS: Record<string, "open" | "locked" | "finished"> = {
+const STATUS_LABELS = { upcoming: "Aberto", locked: "Travado", live: "Ao vivo", finished: "Encerrado" };
+const STATUS_VARIANTS: Record<string, "open" | "locked" | "live" | "finished"> = {
   upcoming: "open",
   locked: "locked",
+  live: "live",
   finished: "finished",
 };
 
@@ -25,6 +26,7 @@ export default function AdminJogosPage() {
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [clearingId, setClearingId] = useState<string | null>(null);
+  const [togglingLiveId, setTogglingLiveId] = useState<string | null>(null);
   const [results, setResults] = useState<Record<string, { home: string; away: string }>>({});
   const [search, setSearch] = useState("");
 
@@ -94,6 +96,45 @@ export default function AdminJogosPage() {
     }
   }
 
+  async function handleToggleLive(game: Game) {
+    const willBeLive = game.status === "locked";
+    if (
+      !confirm(
+        willBeLive
+          ? `Marcar "${game.homeTeam} × ${game.awayTeam}" como ao vivo? O placar será buscado automaticamente.`
+          : `Encerrar o jogo ao vivo "${game.homeTeam} × ${game.awayTeam}"? Use o placar final abaixo e salve.`
+      )
+    )
+      return;
+
+    setTogglingLiveId(game.id);
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      const body = willBeLive
+        ? { gameId: game.id, homeScore: 0, awayScore: 0, isLive: true }
+        : { gameId: game.id, homeScore: game.homeScore ?? 0, awayScore: game.awayScore ?? 0, isLive: false };
+
+      const response = await fetch("/api/admin/result", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error ?? "Erro desconhecido");
+      }
+      toast.success(
+        willBeLive
+          ? `${game.homeTeam} × ${game.awayTeam} marcado como ao vivo!`
+          : `${game.homeTeam} × ${game.awayTeam} encerrado.`
+      );
+    } catch (err) {
+      toast.error(`Erro: ${(err as Error).message}`);
+    } finally {
+      setTogglingLiveId(null);
+    }
+  }
+
   async function handleClearResult(game: Game) {
     if (!confirm(`Remover o placar de ${game.homeTeam} × ${game.awayTeam}? Os pontos deste jogo serão zerados.`)) return;
 
@@ -156,6 +197,8 @@ export default function AdminJogosPage() {
             const r = results[game.id];
             const isSaving = savingId === game.id;
             const isClearing = clearingId === game.id;
+            const isTogglingLive = togglingLiveId === game.id;
+            const isLive = game.status === "live";
 
             return (
               <div
@@ -180,13 +223,40 @@ export default function AdminJogosPage() {
                   </div>
                 </div>
 
-                {/* Resultado atual + botão limpar */}
-                {game.homeScore !== null && (
-                  <div className="flex items-center gap-2">
+                {/* Resultado atual + controles ao vivo */}
+                <div className="flex items-center gap-2">
+                  {game.homeScore !== null && (
                     <div className="flex items-center gap-1 text-sm font-bold">
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      {isLive ? (
+                        <Radio className="h-4 w-4 text-red-500 animate-pulse" />
+                      ) : (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      )}
                       {game.homeScore} × {game.awayScore}
                     </div>
+                  )}
+
+                  {/* Botão ao vivo: aparece em jogos travados ou ao vivo */}
+                  {(game.status === "locked" || isLive) && (
+                    <Button
+                      size="sm"
+                      variant={isLive ? "destructive" : "outline"}
+                      className="h-7 gap-1 px-2 text-xs"
+                      onClick={() => handleToggleLive(game)}
+                      disabled={isTogglingLive}
+                      title={isLive ? "Encerrar jogo ao vivo" : "Marcar como ao vivo"}
+                    >
+                      {isTogglingLive ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Radio className="h-3 w-3" />
+                      )}
+                      {isLive ? "Encerrar" : "Ao vivo"}
+                    </Button>
+                  )}
+
+                  {/* Botão limpar resultado */}
+                  {game.homeScore !== null && game.status === "finished" && (
                     <Button
                       size="sm"
                       variant="ghost"
@@ -200,8 +270,8 @@ export default function AdminJogosPage() {
                         : <Trash2 className="h-3.5 w-3.5" />
                       }
                     </Button>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* Inputs de resultado */}
                 <div className="flex items-center gap-2">

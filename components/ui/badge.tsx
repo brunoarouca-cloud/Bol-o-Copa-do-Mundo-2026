@@ -16,6 +16,7 @@ const badgeVariants = cva(
         outline: "text-foreground",
         open: "border-transparent bg-status-open text-white",
         locked: "border-transparent bg-status-locked text-white",
+        live: "border-transparent bg-red-600 text-white",
         finished: "border-transparent bg-status-finished text-white",
       },
     },
