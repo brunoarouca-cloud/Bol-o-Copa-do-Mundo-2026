@@ -9,13 +9,15 @@ import { useGameLockCountdown } from "@/hooks/use-countdown";
 import { formatGameDateShort } from "@/lib/time";
 import { useBetSave } from "@/hooks/use-bets";
 import { MapPin, Clock, Radio } from "lucide-react";
-import type { Game, Bet } from "@/types";
+import { GameBetsDialog } from "@/components/game-bets-dialog";
+import type { Game, Bet, ScoringSettings } from "@/types";
 
 interface GameCardProps {
   game: Game;
   bet?: Bet;
   userId: string;
   lockMinutesBefore?: number;
+  settings?: ScoringSettings | null;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -46,6 +48,7 @@ export function GameCard({
   bet,
   userId,
   lockMinutesBefore = 5,
+  settings,
 }: GameCardProps) {
   const { save, saving } = useBetSave(userId, game.id);
   const countdown = useGameLockCountdown(
@@ -60,13 +63,16 @@ export function GameCard({
     bet?.awayScore !== undefined ? String(bet.awayScore) : ""
   );
 
-  // Sync com dados do servidor
+  // Sync com dados do servidor (inclusive quando aposta é deletada → bet vira undefined)
   useEffect(() => {
     if (bet) {
       setHomeInput(String(bet.homeScore));
       setAwayInput(String(bet.awayScore));
+    } else {
+      setHomeInput("");
+      setAwayInput("");
     }
-  }, [bet?.homeScore, bet?.awayScore]);
+  }, [bet?.id, bet?.homeScore, bet?.awayScore]);
 
   const isReadOnly = game.status !== "upcoming";
   const isLive = game.status === "live";
@@ -238,6 +244,15 @@ export function GameCard({
             )}
           </div>
         </div>
+
+        {/* Botão "Ver apostas do grupo" — só para jogos não abertos */}
+        {game.status !== "upcoming" && (
+          <GameBetsDialog
+            game={game}
+            currentUserId={userId}
+            settings={settings}
+          />
+        )}
       </CardContent>
     </Card>
   );

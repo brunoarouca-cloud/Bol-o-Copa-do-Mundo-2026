@@ -51,6 +51,16 @@ export function useBets(userId: string | null) {
     [bets]
   );
 
+  /**
+   * Remove apostas do estado local imediatamente (update otimista).
+   * Necessário porque o onSnapshot não recebe deleções feitas pelo Admin SDK
+   * de forma confiável quando as Firestore rules bloqueiam delete no cliente.
+   */
+  const removeBetsOptimistically = useCallback((betIds: string[]) => {
+    const idSet = new Set(betIds);
+    setBets((prev) => prev.filter((b) => !idSet.has(b.id)));
+  }, []);
+
   const saveBet = useCallback(
     async (
       userId: string,
@@ -80,7 +90,7 @@ export function useBets(userId: string | null) {
     [bets]
   );
 
-  return { bets, loading, getBetForGame, saveBet };
+  return { bets, loading, getBetForGame, saveBet, removeBetsOptimistically };
 }
 
 export function useBetSave(userId: string | null, gameId: string) {

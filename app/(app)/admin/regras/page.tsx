@@ -24,11 +24,21 @@ const FIELDS = [
 
 type Field = (typeof FIELDS)[number]["key"];
 
+const BRT = "America/Sao_Paulo";
+
+function toBRTLocal(ts: Timestamp | undefined): string {
+  if (!ts) return "";
+  const { toZonedTime, format: ftz } = require("date-fns-tz");
+  return ftz(toZonedTime(ts.toDate(), BRT), "yyyy-MM-dd'T'HH:mm");
+}
+
 export default function AdminRegrasPage() {
   const [settings, setSettings] = useState<Partial<ScoringSettings>>({});
   const [formValues, setFormValues] = useState<Record<string, number>>({});
+  const [deadlineLocal, setDeadlineLocal] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingDeadline, setSavingDeadline] = useState(false);
   const [recalculating, setRecalculating] = useState(false);
 
   useEffect(() => {
@@ -39,9 +49,10 @@ export default function AdminRegrasPage() {
         setSettings(data);
         const vals: Record<string, number> = {};
         FIELDS.forEach(({ key }) => {
-          vals[key] = (data as Record<string, number>)[key] ?? 0;
+          vals[key] = (data as unknown as Record<string, number>)[key] ?? 0;
         });
         setFormValues(vals);
+        setDeadlineLocal(toBRTLocal(data.nominalDeadline));
       }
       setLoading(false);
     });
@@ -66,6 +77,27 @@ export default function AdminRegrasPage() {
       toast.error("Erro ao salvar regras.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleSaveDeadline() {
+    if (!deadlineLocal) { toast.error("Preencha a data e hora."); return; }
+    setSavingDeadline(true);
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      const { fromZonedTime } = await import("date-fns-tz");
+      const utcDate = fromZonedTime(new Date(deadlineLocal), BRT);
+      const res = await fetch("/api/admin/set-deadline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ deadlineISO: utcDate.toISOString() }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error);
+      toast.success("Prazo das nominais atualizado!");
+    } catch (err) {
+      toast.error(`Erro: ${(err as Error).message}`);
+    } finally {
+      setSavingDeadline(false);
     }
   }
 
@@ -136,6 +168,33 @@ export default function AdminRegrasPage() {
               />
             </div>
           ))}
+        </CardContent>
+      </Card>
+
+      {/* Prazo das apostas nominais */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Prazo das apostas nominais</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-1">
+            <Label htmlFor="deadline">Data e hora limite (BRT)</Label>
+            <p className="text-xs text-muted-foreground">
+              Após esse prazo nenhum participante poderá fazer ou alterar apostas nominais.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                id="deadline"
+                type="datetime-local"
+                value={deadlineLocal}
+                onChange={(e) => setDeadlineLocal(e.target.value)}
+                className="h-9 w-full sm:w-auto rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <Button size="sm" onClick={handleSaveDeadline} disabled={savingDeadline} className="w-full sm:w-auto">
+                {savingDeadline ? <Loader2 className="h-4 w-4 animate-spin" /> : "Salvar prazo"}
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

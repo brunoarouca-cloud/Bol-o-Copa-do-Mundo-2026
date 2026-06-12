@@ -8,16 +8,25 @@ import {
   onSnapshot,
   doc,
   getDoc,
+  getDocs,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
 import { nominalBetConverter } from "@/lib/firebase/converters";
 import { NominalBetCard } from "@/components/nominal-bet-card";
 import { useAuth } from "@/hooks/use-auth";
 import { useCountdown } from "@/hooks/use-countdown";
-import { Loader2, Info } from "lucide-react";
+import { Loader2, Info, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Timestamp } from "firebase/firestore";
+import { toast } from "sonner";
 import type { NominalBet, NominalResults, ScoringSettings, NominalCategory } from "@/types";
 import { NOMINAL_DEADLINE_UTC } from "@/lib/time";
+import { format } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
+import { ptBR } from "date-fns/locale";
+
+const BRT_TZ = "America/Sao_Paulo";
 
 const NOMINAL_CATEGORIES: {
   category: NominalCategory;
@@ -57,11 +66,19 @@ export default function NominaisPage() {
   const [results, setResults] = useState<NominalResults | null>(null);
   const [settings, setSettings] = useState<ScoringSettings | null>(null);
   const [loading, setLoading] = useState(true);
+  const [clearingBets, setClearingBets] = useState(false);
 
   // Deadline das apostas nominais
   const deadline = settings?.nominalDeadline ?? Timestamp.fromDate(NOMINAL_DEADLINE_UTC);
   const countdown = useCountdown(deadline);
   const isLocked = countdown.isExpired;
+
+  // Formata a data do deadline em BRT para exibição
+  const deadlineDisplay = format(
+    toZonedTime(deadline.toDate(), BRT_TZ),
+    "dd/MM/yyyy 'às' HH:mm",
+    { locale: ptBR }
+  );
 
   // Carrega apostas nominais do usuário
   useEffect(() => {
@@ -96,6 +113,31 @@ export default function NominaisPage() {
     });
   }, []);
 
+  async function handleClearBets() {
+    if (!user?.uid || bets.length === 0) return;
+    const confirmed = window.confirm(
+      `Isso vai apagar todas as suas ${bets.length} aposta(s) nominal(is).\n\nEsta ação não pode ser desfeita. Deseja continuar?`
+    );
+    if (!confirmed) return;
+
+    setClearingBets(true);
+    try {
+      const q = query(
+        collection(db, "nominalBets"),
+        where("userId", "==", user.uid)
+      );
+      const snap = await getDocs(q);
+      const batch = writeBatch(db);
+      snap.docs.forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+      toast.success("Apostas nominais removidas.");
+    } catch (err) {
+      toast.error(`Erro: ${(err as Error).message}`);
+    } finally {
+      setClearingBets(false);
+    }
+  }
+
   function getBetForCategory(category: NominalCategory): NominalBet | undefined {
     return bets.find((b) => b.category === category);
   }
@@ -115,11 +157,30 @@ export default function NominaisPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Apostas Nominais</h1>
-        <p className="text-muted-foreground text-sm">
-          Cada aposta nominal correta vale {settings?.nominalBet ?? 50} pontos.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Apostas Nominais</h1>
+          <p className="text-muted-foreground text-sm">
+            Cada aposta nominal correta vale {settings?.nominalBet ?? 50} pontos.
+          </p>
+        </div>
+        {!isLocked && bets.length > 0 && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleClearBets}
+            disabled={clearingBets}
+            className="flex items-center gap-1.5 text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/5 shrink-0"
+            title="Apagar todas as apostas nominais"
+          >
+            {clearingBets ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+            <span className="hidden sm:inline">Limpar</span>
+          </Button>
+        )}
       </div>
 
       {/* Countdown */}
@@ -137,7 +198,7 @@ export default function NominaisPage() {
           <div>
             <p className="font-semibold">Apostas nominais encerradas</p>
             <p className="text-sm opacity-80">
-              O prazo de 10/06/2026 às 23:59 (BRT) expirou.
+              O prazo de {deadlineDisplay} (BRT) expirou.
             </p>
           </div>
         ) : (
@@ -145,7 +206,7 @@ export default function NominaisPage() {
             <p className="font-semibold">Prazo para apostas nominais</p>
             <p className="text-sm opacity-80">
               Fecha em: <span className="font-bold">{countdown.formatted}</span>
-              {" "}(10/06/2026 às 23:59 BRT)
+              {" "}({deadlineDisplay} BRT)
             </p>
           </div>
         )}

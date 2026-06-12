@@ -1,16 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminFirestore } from "@/lib/firebase/admin";
+import { getAdminFirestore, getAdminAuth } from "@/lib/firebase/admin";
 import { Timestamp } from "firebase-admin/firestore";
 
 /**
  * POST /api/recalculate-nominals
  * Recalcula pontos de todas as apostas nominais com base em nominalResults/global.
+ * Auth: CRON_SECRET (cron job) ou Firebase ID token de admin (painel).
  */
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
+  const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  let authorized = false;
+  if (!cronSecret) {
+    authorized = true; // dev sem secret configurado
+  } else if (bearerToken === cronSecret) {
+    authorized = true; // chamada pelo cron job
+  } else if (bearerToken) {
+    try {
+      const decoded = await getAdminAuth().verifyIdToken(bearerToken);
+      if (decoded.admin === true) authorized = true; // admin via painel
+    } catch {
+      // token inválido
+    }
+  }
+
+  if (!authorized) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

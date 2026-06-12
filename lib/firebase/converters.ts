@@ -13,7 +13,7 @@ function createConverter<T extends DocumentData>(): FirestoreDataConverter<T> {
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): T {
       const data = snapshot.data(options);
-      return { id: snapshot.id, ...data } as T;
+      return { id: snapshot.id, ...data } as unknown as T;
     },
   };
 }

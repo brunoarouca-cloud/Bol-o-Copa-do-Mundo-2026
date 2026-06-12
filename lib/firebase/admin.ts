@@ -1,6 +1,9 @@
 import { cert, getApps, initializeApp, App } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore, initializeFirestore } from "firebase-admin/firestore";
+import type { Firestore } from "firebase-admin/firestore";
+
+let _db: Firestore | null = null;
 
 function getAdminApp(): App {
   if (getApps().length > 0) {
@@ -29,6 +32,25 @@ export function getAdminAuth() {
   return getAuth(getAdminApp());
 }
 
-export function getAdminFirestore() {
-  return getFirestore(getAdminApp());
+/**
+ * Retorna uma instância do Firestore com preferRest=true.
+ * Usa initializeFirestore() que é a API correta do firebase-admin v12
+ * para passar settings (incluindo preferRest) no momento da criação.
+ * Isso força HTTP/REST em vez de gRPC, evitando timeouts em serverless (Vercel).
+ */
+export function getAdminFirestore(): Firestore {
+  if (_db) return _db;
+
+  const app = getAdminApp();
+
+  // initializeFirestore com preferRest evita gRPC (que trava em Vercel serverless)
+  // Se já foi inicializado com as mesmas settings, retorna a instância existente
+  try {
+    _db = initializeFirestore(app, { preferRest: true });
+  } catch {
+    // Já inicializado (warm start com settings iguais) — pega a instância existente
+    _db = getFirestore(app);
+  }
+
+  return _db;
 }

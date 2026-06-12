@@ -6,6 +6,13 @@ import { db } from "@/lib/firebase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import type { ScoringSettings } from "@/types";
+import { format } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
+import { ptBR } from "date-fns/locale";
+import { Timestamp } from "firebase/firestore";
+import { NOMINAL_DEADLINE_UTC } from "@/lib/time";
+
+const BRT_TZ = "America/Sao_Paulo";
 
 const DEFAULT_SETTINGS: Partial<ScoringSettings> = {
   exactScore: 20,
@@ -30,6 +37,15 @@ export default function RegrasPage() {
   }, []);
 
   const s = settings;
+
+  const deadlineDisplay = format(
+    toZonedTime(
+      (settings.nominalDeadline as unknown as Timestamp | undefined)?.toDate() ?? NOMINAL_DEADLINE_UTC,
+      BRT_TZ
+    ),
+    "dd/MM/yyyy 'às' HH:mm",
+    { locale: ptBR }
+  );
 
   if (loading) {
     return (
@@ -143,7 +159,8 @@ export default function RegrasPage() {
             <span className="font-bold text-primary">+{s.nominalBet} pontos</span>.
           </p>
           <p className="text-muted-foreground text-xs">
-            O prazo para as apostas nominais é até <strong>10/06/2026 às 23:59 (BRT)</strong>,
+            O prazo para as apostas nominais é até{" "}
+            <strong>{deadlineDisplay} (BRT)</strong>,
             antes do início da Copa. Após este horário as apostas ficam travadas.
           </p>
         </CardContent>
@@ -241,6 +258,10 @@ export default function RegrasPage() {
               Em caso de empate na pontuação, aplica-se o critério de desempate descrito acima.
             </p>
           </div>
+
+          <p className="text-xs text-muted-foreground italic">
+            ⭐ <strong>Taxa Administrador:</strong> isento de inscrição.
+          </p>
         </CardContent>
       </Card>
 

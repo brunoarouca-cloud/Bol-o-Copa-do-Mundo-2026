@@ -41,15 +41,20 @@ service cloud.firestore {
         && isOwner(resource.data.userId)
         && gameUnlocked(resource.data.gameId)
         && !('points' in request.resource.data.diff(resource.data).affectedKeys());
-      allow delete: if false;
+      // Permite que o próprio usuário apague apostas de jogos ainda abertos
+      allow delete: if isSignedIn()
+        && isOwner(resource.data.userId)
+        && gameUnlocked(resource.data.gameId);
     }
 
     match /nominalBets/{betId} {
-      allow read: if isSignedIn() && isOwner(resource.data.userId);
+      allow read: if isSignedIn() && (isOwner(resource.data.userId) || isAdmin());
       allow create, update: if isSignedIn()
         && isOwner(request.resource.data.userId)
         && request.time < get(/databases/$(database)/documents/settings/scoring).data.nominalDeadline;
-      allow delete: if false;
+      allow delete: if isSignedIn()
+        && isOwner(resource.data.userId)
+        && request.time < get(/databases/$(database)/documents/settings/scoring).data.nominalDeadline;
     }
 
     match /nominalResults/global {

@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bolão Copa do Mundo 2026 — Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: #0f172a; color: #f8fafc; overflow: hidden; height: 100vh; }
+
+  /* ── Shell ── */
+  .shell { width: 390px; height: 780px; background: #fff; border-radius: 40px; box-shadow: 0 40px 120px rgba(0,0,0,0.6); overflow: hidden; position: relative; color: #1e293b; }
+  .stage { display: flex; align-items: center; justify-content: center; height: 100vh; background: radial-gradient(ellipse at center, #1a3a1a 0%, #0d1b0d 100%); }
+
+  /* ── Navbar ── */
+  .navbar { background: rgba(255,255,255,0.97); border-bottom: 1px solid #e2e8f0; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .nav-logo { display: flex; align-items: center; gap: 6px; font-weight: 700; color: #16a34a; font-size: 14px; }
+  .nav-actions { display: flex; align-items: center; gap: 6px; }
+  .badge-pago { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; padding: 3px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; }
+  .badge-pendente { background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; padding: 3px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; }
+  .nav-icon { width: 28px; height: 28px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+
+  /* ── Bottom nav ── */
+  .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e2e8f0; display: flex; padding: 8px 0 20px; }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: #94a3b8; cursor: pointer; }
+  .nav-item.active { color: #16a34a; }
+  .nav-item svg, .nav-item .nav-emoji { font-size: 18px; }
+
+  /* ── Content ── */
+  .content { height: calc(100% - 57px - 68px); overflow: hidden; padding: 16px; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── Cards ── */
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .phase-badge { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; }
+  .teams { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 10px 0; }
+  .team { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+  .flag { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .team-name { font-size: 11px; font-weight: 600; text-align: center; color: #334155; }
+  .vs { font-size: 12px; font-weight: 700; color: #94a3b8; }
+  .score-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .score-input { width: 44px; height: 36px; border: 2px solid #e2e8f0; border-radius: 8px; text-align: center; font-size: 18px; font-weight: 700; color: #1e293b; background: #f8fafc; display: flex; align-items: center; justify-content: center; }
+  .score-input.filled { border-color: #16a34a; background: #f0fdf4; color: #16a34a; }
+  .score-x { font-size: 14px; color: #94a3b8; font-weight: 600; }
+  .bet-btn { width: 100%; background: #16a34a; color: #fff; border: none; padding: 9px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-top: 8px; cursor: pointer; }
+  .bet-saved { background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; border-radius: 8px; padding: 6px; text-align: center; font-size: 11px; font-weight: 600; margin-top: 6px; }
+  .game-date { font-size: 11px; color: #94a3b8; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #16a34a; display: inline-block; margin-right: 4px; }
+
+  /* ── Filters ── */
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .filter-pill { padding: 5px 10px; border: 1px solid #e2e8f0; border-radius: 99px; font-size: 11px; color: #64748b; background: #fff; cursor: pointer; }
+  .filter-pill.active { background: #16a34a; color: #fff; border-color: #16a34a; }
+
+  /* ── Ranking ── */
+  .ranking-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; margin-bottom: 6px; }
+  .ranking-row.gold { background: linear-gradient(90deg, #fef9c3, #fef3c7); border: 1px solid #fde68a; }
+  .ranking-row.silver { background: linear-gradient(90deg, #f1f5f9, #e2e8f0); border: 1px solid #cbd5e1; }
+  .ranking-row.bronze { background: linear-gradient(90deg, #fef3e8, #fed7aa33); border: 1px solid #fdba7433; }
+  .ranking-row.normal { background: #f8fafc; border: 1px solid #f1f5f9; }
+  .rank-pos { font-size: 18px; width: 30px; text-align: center; }
+  .rank-name { font-size: 13px; font-weight: 600; flex: 1; color: #1e293b; }
+  .rank-pts { font-size: 15px; font-weight: 700; color: #16a34a; }
+  .rank-exact { background: #dcfce7; color: #15803d; border-radius: 99px; padding: 1px 7px; font-size: 10px; font-weight: 600; }
+  .section-title { font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+  .section-sub { font-size: 12px; color: #64748b; margin-bottom: 14px; }
+
+  /* ── Nominais ── */
+  .nominal-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+  .nominal-label { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .nominal-input { width: 100%; border: 2px solid #e2e8f0; border-radius: 8px; padding: 9px 12px; font-size: 13px; color: #1e293b; background: #f8fafc; }
+  .nominal-input.filled { border-color: #16a34a; background: #f0fdf4; }
+  .pts-badge { background: #fef3c7; color: #d97706; border-radius: 99px; padding: 2px 8px; font-size: 10px; font-weight: 700; }
+
+  /* ── News ── */
+  .news-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
+  .news-header { padding: 12px 14px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+  .news-chevron { color: #94a3b8; margin-top: 2px; transition: transform 0.3s; }
+  .news-chevron.open { transform: rotate(180deg); }
+  .news-title { font-size: 13px; font-weight: 600; flex: 1; line-height: 1.4; color: #1e293b; }
+  .news-date { font-size: 10px; color: #94a3b8; white-space: nowrap; }
+  .news-body { padding: 0 14px 12px 14px; font-size: 12px; color: #475569; line-height: 1.6; border-top: 1px solid #f1f5f9; padding-top: 10px; }
+  .news-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+  .news-tag { background: #f1f5f9; color: #475569; border-radius: 99px; padding: 2px 8px; font-size: 10px; }
+
+  /* ── Animations ── */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+  @keyframes typeIn { from { width: 0; } to { width: 100%; } }
+  @keyframes cursor-blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+  @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .anim-fade { animation: fadeIn 0.5s ease forwards; }
+  .anim-slide { animation: slideIn 0.4s ease forwards; }
+  .anim-pop { animation: popIn 0.3s ease forwards; }
+
+  /* ── Cursor ── */
+  .cursor { width: 20px; height: 20px; background: rgba(22,163,74,0.9); border-radius: 50%; position: absolute; pointer-events: none; z-index: 100; box-shadow: 0 0 0 3px rgba(22,163,74,0.3); transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+  .cursor.clicking { transform: scale(0.7); }
+
+  /* ── Callout ── */
+  .callout { position: absolute; background: #1e293b; color: #fff; padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 500; max-width: 200px; line-height: 1.4; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .callout::before { content: ''; position: absolute; border: 6px solid transparent; }
+  .callout.show { opacity: 1; }
+  .callout.bottom::before { border-top-color: #1e293b; top: 100%; left: 50%; transform: translateX(-50%); }
+  .callout.top::before { border-bottom-color: #1e293b; bottom: 100%; left: 50%; transform: translateX(-50%); }
+  .callout.left::before { border-right-color: #1e293b; right: 100%; top: 50%; transform: translateY(-50%); }
+
+  /* ── Progress ── */
+  .progress-bar { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.1); z-index: 200; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #16a34a, #4ade80); transition: width 0.5s ease; }
+
+  /* ── Controls ── */
+  .controls { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; align-items: center; z-index: 200; }
+  .ctrl-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 16px; border-radius: 99px; font-size: 12px; cursor: pointer; transition: background 0.2s; backdrop-filter: blur(10px); }
+  .ctrl-btn:hover { background: rgba(255,255,255,0.25); }
+  .ctrl-btn.primary { background: #16a34a; border-color: #16a34a; }
+  .step-indicator { color: rgba(255,255,255,0.6); font-size: 12px; }
+
+  /* ── Scene title ── */
+  .scene-label { position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.5); color: rgba(255,255,255,0.8); padding: 6px 12px; border-radius: 99px; font-size: 11px; backdrop-filter: blur(10px); z-index: 200; }
+
+  /* ── Highlight ring ── */
+  .highlight-ring { position: absolute; border: 2px solid #4ade80; border-radius: 12px; pointer-events: none; z-index: 99; opacity: 0; transition: opacity 0.3s; box-shadow: 0 0 0 4px rgba(74,222,128,0.2); }
+  .highlight-ring.show { opacity: 1; }
+
+  /* ── Typing animation ── */
+  .typing-text { overflow: hidden; white-space: nowrap; border-right: 2px solid #16a34a; animation: cursor-blink 0.7s infinite; display: inline-block; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="scene-label" id="sceneLabel">Apresentação</div>
+
+<div class="controls">
+  <button class="ctrl-btn" id="prevBtn" onclick="prevScene()">← Anterior</button>
+  <button class="ctrl-btn primary" id="playBtn" onclick="togglePlay()">⏸ Pausar</button>
+  <span class="step-indicator" id="stepInd">1 / 7</span>
+  <button class="ctrl-btn" id="nextBtn" onclick="nextScene()">Próximo →</button>
+</div>
+
+<div class="stage">
+  <div class="shell" id="shell">
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+      <div class="nav-logo">🏆 Bolão Copa 2026</div>
+      <div class="nav-actions">
+        <span class="badge-pago" id="navBadge">✓ Pago</span>
+        <div class="nav-icon">🌙</div>
+        <div class="nav-icon" style="color:#64748b;font-size:16px;">→</div>
+      </div>
+    </div>
+
+    <!-- PAGES -->
+    <div class="content" id="mainContent">
+
+      <!-- PAGE 1: BOAS-VINDAS -->
+      <div class="page active" id="page-welcome">
+        <div style="text-align:center;padding:30px 10px;">
+          <div style="font-size:56px;margin-bottom:16px;">⚽</div>
+          <h1 style="font-size:22px;font-weight:800;color:#1e293b;margin-bottom:8px;">Bolão Copa 2026</h1>
+          <p style="font-size:13px;color:#64748b;line-height:1.6;margin-bottom:24px;">20 anos de tradição.<br>Agora no seu celular.</p>
+          <div style="background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border-radius:12px;padding:16px;text-align:left;margin-bottom:12px;">
+            <div style="font-size:11px;opacity:0.8;margin-bottom:4px;">APOSTAS EM TEMPO REAL</div>
+            <div style="font-size:13px;font-weight:600;">Faça seus palpites antes de cada jogo travar automaticamente</div>
+          </div>
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px;text-align:left;margin-bottom:12px;">
+            <div style="font-size:11px;color:#16a34a;font-weight:600;margin-bottom:4px;">CLASSIFICAÇÃO AO VIVO</div>
+            <div style="font-size:13px;color:#1e293b;">Ranking atualizado automaticamente com os resultados</div>
+          </div>
+          <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:16px;text-align:left;">
+            <div style="font-size:11px;color:#ea580c;font-weight:600;margin-bottom:4px;">APOSTAS NOMINAIS</div>
+            <div style="font-size:13px;color:#1e293b;">Campeão, artilheiro, vice e terceiro lugar</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 2: APOSTAS -->
+      <div class="page" id="page-apostas">
+        <div class="section-title">Apostas</div>
+        <div class="section-sub">Palpite para cada jogo da Copa</div>
+        <div class="filters">
+          <span class="filter-pill active">Fase de Grupos</span>
+          <span class="filter-pill">16 avos</span>
+          <span class="filter-pill">Oitavas</span>
+          <span class="filter-pill">Quartas</span>
+        </div>
+
+        <!-- Game Card 1 -->
+        <div class="card" id="card1">
+          <div class="card-header">
+            <span class="game-date">📅 15/06 · 13:00</span>
+            <span class="phase-badge">Grupo A</span>
+          </div>
+          <div class="teams">
+            <div class="team">
+              <div class="flag">🇧🇷</div>
+              <div class="team-name">Brasil</div>
+            </div>
+            <div class="vs">×</div>
+            <div class="team">
+              <div class="flag">🇩🇪</div>
+              <div class="team-name">Alemanha</div>
+            </div>
+          </div>
+          <div class="score-row">
+            <div class="score-input filled" id="score1home">2</div>
+            <span class="score-x">×</span>
+            <div class="score-input filled" id="score1away">1</div>
+          </div>
+          <div class="bet-saved anim-pop">✓ Palpite salvo — 2 × 1</div>
+        </div>
+
+        <!-- Game Card 2 -->
+        <div class="card" id="card2">
+          <div class="card-header">
+            <span class="game-date">📅 15/06 · 16:00</span>
+            <span class="phase-badge">Grupo B</span>
+          </div>
+          <div class="teams">
+            <div class="team">
+              <div class="flag">🇦🇷</div>
+              <div class="team-name">Argentina</div>
+            </div>
+            <div class="vs">×</div>
+            <div class="team">
+              <div class="flag">🇫🇷</div>
+              <div class="team-name">França</div>
+            </div>
+          </div>
+          <div class="score-row">
+            <div class="score-input" id="score2home">—</div>
+            <span class="score-x">×</span>
+            <div class="score-input" id="score2away">—</div>
+          </div>
+          <button class="bet-btn" id="betBtn2">Salvar Palpite</button>
+        </div>
+      </div>
+
+      <!-- PAGE 3: APOSTAS - fazendo aposta -->
+      <div class="page" id="page-betting">
+        <div class="section-title">Apostas</div>
+        <div class="section-sub">Palpite para cada jogo da Copa</div>
+        <div class="filters">
+          <span class="filter-pill active">Fase de Grupos</span>
+          <span class="filter-pill">16 avos</span>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="game-date">📅 15/06 · 16:00</span>
+            <span class="phase-badge">Grupo B</span>
+          </div>
+          <div class="teams">
+            <div class="team">
+              <div class="flag">🇦🇷</div>
+              <div class="team-name">Argentina</div>
+            </div>
+            <div class="vs">×</div>
+            <div class="team">
+              <div class="flag">🇫🇷</div>
+              <div class="team-name">França</div>
+            </div>
+          </div>
+          <div class="score-row">
+            <div class="score-input filled" id="betHome" style="font-size:20px;">1</div>
+            <span class="score-x">×</span>
+            <div class="score-input" id="betAway" style="font-size:20px;">—</div>
+          </div>
+          <div id="betSaveArea"><button class="bet-btn">Salvar Palpite</button></div>
+        </div>
+
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 12px;font-size:11px;color:#92400e;display:flex;gap:8px;align-items:flex-start;">
+          <span style="font-size:16px;">🔒</span>
+          <span>Apostas travam automaticamente <strong>5 minutos</strong> antes do apito inicial</span>
+        </div>
+      </div>
+
+      <!-- PAGE 4: NOMINAIS -->
+      <div class="page" id="page-nominais">
+        <div class="section-title">Apostas Nominais</div>
+        <div class="section-sub">Palpites únicos — valem 50 pts cada</div>
+
+        <div class="nominal-card">
+          <div class="nominal-label">🏆 Campeão <span class="pts-badge">+50 pts</span></div>
+          <input class="nominal-input filled" value="Brasil" readonly id="inp-champion">
+        </div>
+        <div class="nominal-card">
+          <div class="nominal-label">🥈 Vice-campeão <span class="pts-badge">+50 pts</span></div>
+          <input class="nominal-input" placeholder="Digite o país..." readonly id="inp-runner">
+        </div>
+        <div class="nominal-card">
+          <div class="nominal-label">⚽ Artilheiro <span class="pts-badge">+50 pts</span></div>
+          <input class="nominal-input" placeholder="Nome do jogador..." readonly id="inp-scorer">
+        </div>
+        <div class="nominal-card">
+          <div class="nominal-label">🥉 Terceiro Lugar <span class="pts-badge">+50 pts</span></div>
+          <input class="nominal-input" placeholder="Digite o país..." readonly id="inp-third">
+        </div>
+
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px;font-size:11px;color:#166534;margin-top:4px;">
+          📅 Prazo final: <strong>05/06/2026 às 12:00</strong>
+        </div>
+      </div>
+
+      <!-- PAGE 5: CLASSIFICAÇÃO -->
+      <div class="page" id="page-ranking">
+        <div class="section-title">Classificação</div>
+        <div class="section-sub">Ranking em tempo real</div>
+
+        <div class="ranking-row gold">
+          <div class="rank-pos">🥇</div>
+          <div style="flex:1">
+            <div class="rank-name">Carlos</div>
+            <span class="rank-exact">⚡ 8 exatos</span>
+          </div>
+          <div class="rank-pts">320</div>
+        </div>
+        <div class="ranking-row silver">
+          <div class="rank-pos">🥈</div>
+          <div style="flex:1">
+            <div class="rank-name">Ana</div>
+            <span class="rank-exact">⚡ 6 exatos</span>
+          </div>
+          <div class="rank-pts">285</div>
+        </div>
+        <div class="ranking-row bronze">
+          <div class="rank-pos">🥉</div>
+          <div style="flex:1">
+            <div class="rank-name">Pedro</div>
+            <span class="rank-exact">⚡ 5 exatos</span>
+          </div>
+          <div class="rank-pts">260</div>
+        </div>
+        <div class="ranking-row normal">
+          <div class="rank-pos" style="font-size:13px;color:#64748b;">4</div>
+          <div style="flex:1"><div class="rank-name">Mariana</div></div>
+          <div class="rank-pts">240</div>
+        </div>
+        <div class="ranking-row normal" style="border: 2px solid #16a34a;">
+          <div class="rank-pos" style="font-size:13px;color:#64748b;">5</div>
+          <div style="flex:1">
+            <div class="rank-name">Você 👈</div>
+          </div>
+          <div class="rank-pts">215</div>
+        </div>
+        <div class="ranking-row normal">
+          <div class="rank-pos" style="font-size:13px;color:#64748b;">6</div>
+          <div style="flex:1"><div class="rank-name">João</div></div>
+          <div class="rank-pts">198</div>
+        </div>
+      </div>
+
+      <!-- PAGE 6: NOTÍCIAS -->
+      <div class="page" id="page-noticias">
+        <div class="section-title">Notícias</div>
+        <div class="section-sub">Resumo diário gerado por IA às 08:00 BRT</div>
+
+        <div class="news-card">
+          <div class="news-header">
+            <span class="news-chevron open">▾</span>
+            <div style="flex:1">
+              <div class="news-title">Brasil vence Alemanha de virada e lidera Grupo A</div>
+              <span class="news-date">15/06/2026</span>
+            </div>
+          </div>
+          <div class="news-body">
+            Em jogo emocionante, o Brasil superou a Alemanha por 2 a 1 com gol nos acréscimos. No bolão, 4 participantes acertaram o placar exato e marcaram 20 pontos cada.
+            <div class="news-tags">
+              <span class="news-tag">Brasil</span>
+              <span class="news-tag">Alemanha</span>
+              <span class="news-tag">Grupo A</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="news-card">
+          <div class="news-header">
+            <span class="news-chevron">▾</span>
+            <div style="flex:1">
+              <div class="news-title">Argentina e França empatam em jogo tenso — confira os palpites</div>
+              <span class="news-date">15/06/2026</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="news-card">
+          <div class="news-header">
+            <span class="news-chevron">▾</span>
+            <div style="flex:1">
+              <div class="news-title">Resumo do dia: Carlos amplia vantagem na liderança do bolão</div>
+              <span class="news-date">14/06/2026</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 7: PAGAMENTO PENDENTE -->
+      <div class="page" id="page-payment">
+        <div style="text-align:center;padding:20px 10px;">
+          <div style="font-size:48px;margin-bottom:12px;">🏆</div>
+          <div class="section-title" style="margin-bottom:4px;">Bolão Copa do Mundo 2026</div>
+          <div style="font-size:12px;color:#64748b;margin-bottom:20px;">20 anos de tradição · Agora no app</div>
+        </div>
+        <!-- Payment modal simulation -->
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.1);">
+          <div style="display:flex;align-items:center;gap:8px;color:#ea580c;font-weight:700;font-size:14px;margin-bottom:16px;">
+            ⚠️ Pagamento Pendente
+          </div>
+          <div style="background:#f3f4f6;border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+            <!-- QR Code simulado -->
+            <div style="width:140px;height:140px;background:repeating-conic-gradient(#000 0% 25%, #fff 0% 50%) 0 0 / 8px 8px;border-radius:4px;border:4px solid #fff;box-shadow:0 0 0 2px #000;"></div>
+          </div>
+          <div style="text-align:center;margin-bottom:12px;">
+            <div style="font-size:20px;font-weight:800;color:#1e293b;">R$ 100,00</div>
+            <div style="font-size:11px;color:#64748b;">Taxa de inscrição — Bolão Copa 2026</div>
+          </div>
+          <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px;font-size:12px;color:#c2410c;text-align:center;line-height:1.5;">
+            Participação pendente de pagamento. Regularize sua situação para continuar apostando.
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav">
+      <div class="nav-item active" id="nav-apostas">🎯<span>Apostas</span></div>
+      <div class="nav-item" id="nav-nominais">⭐<span>Nominais</span></div>
+      <div class="nav-item" id="nav-ranking">📊<span>Classificação</span></div>
+      <div class="nav-item" id="nav-noticias">📰<span>Notícias</span></div>
+      <div class="nav-item" id="nav-regras">📖<span>Regras</span></div>
+    </div>
+
+    <!-- Cursor simulado -->
+    <div class="cursor" id="cursor" style="display:none;left:195px;top:400px;"></div>
+    <!-- Callout -->
+    <div class="callout bottom" id="callout" style="left:100px;top:200px;"></div>
+    <!-- Highlight ring -->
+    <div class="highlight-ring" id="highlight"></div>
+  </div><!-- /shell -->
+</div><!-- /stage -->
+
+<script>
+const scenes = [
+  {
+    label: "1. Boas-vindas",
+    page: "welcome",
+    nav: null,
+    badge: "pago",
+    setup: () => {},
+    steps: [
+      { delay: 500, fn: () => showCallout("Bem-vindo ao Bolão Copa 2026! 🎉", 140, 100, "bottom") },
+      { delay: 2500, fn: () => hideCallout() },
+    ]
+  },
+  {
+    label: "2. Apostas — visão geral",
+    page: "apostas",
+    nav: "apostas",
+    badge: "pago",
+    setup: () => {},
+    steps: [
+      { delay: 400, fn: () => showCallout("Filtre por fase ou grupo de jogos", 130, 165, "bottom") },
+      { delay: 2200, fn: () => { hideCallout(); highlight(16, 155, 358, 42); } },
+      { delay: 3500, fn: () => { hideHighlight(); showCallout("Palpites já salvos aparecem em verde ✓", 130, 270, "bottom"); } },
+      { delay: 5200, fn: () => { hideCallout(); highlight(16, 290, 358, 30); } },
+      { delay: 6500, fn: () => { hideHighlight(); } },
+    ]
+  },
+  {
+    label: "3. Fazendo um palpite",
+    page: "betting",
+    nav: "apostas",
+    badge: "pago",
+    setup: () => {
+      document.getElementById("betHome").textContent = "—";
+      document.getElementById("betHome").className = "score-input";
+      document.getElementById("betAway").textContent = "—";
+      document.getElementById("betAway").className = "score-input";
+      document.getElementById("betSaveArea").innerHTML = '<button class="bet-btn">Salvar Palpite</button>';
+    },
+    steps: [
+      { delay: 300, fn: () => showCallout("Clique nos placares para digitar seu palpite", 130, 310, "top") },
+      { delay: 2000, fn: () => { hideCallout(); moveCursor(162, 340); } },
+      { delay: 2600, fn: () => { clickCursor(); document.getElementById("betHome").textContent = "1"; document.getElementById("betHome").className = "score-input filled"; } },
+      { delay: 3200, fn: () => moveCursor(228, 340) },
+      { delay: 3700, fn: () => { clickCursor(); document.getElementById("betAway").textContent = "0"; document.getElementById("betAway").className = "score-input filled"; } },
+      { delay: 4300, fn: () => { showCallout("Agora é só salvar! 💾", 130, 400, "top"); moveCursor(195, 420); } },
+      { delay: 5000, fn: () => { clickCursor(); document.getElementById("betSaveArea").innerHTML = '<div class="bet-saved anim-pop">✓ Palpite salvo — 1 × 0</div>'; hideCallout(); } },
+      { delay: 5800, fn: () => { showCallout("Palpite registrado com sucesso! ✅", 130, 380, "top"); } },
+      { delay: 7200, fn: () => { hideCallout(); hideCursor(); } },
+    ]
+  },
+  {
+    label: "4. Apostas Nominais",
+    page: "nominais",
+    nav: "nominais",
+    badge: "pago",
+    setup: () => {
+      document.getElementById("inp-runner").value = "";
+      document.getElementById("inp-scorer").value = "";
+      document.getElementById("inp-third").value = "";
+      document.getElementById("inp-runner").className = "nominal-input";
+      document.getElementById("inp-scorer").className = "nominal-input";
+      document.getElementById("inp-third").className = "nominal-input";
+    },
+    steps: [
+      { delay: 400, fn: () => showCallout("Apostas únicas que valem 50 pts cada!", 130, 130, "bottom") },
+      { delay: 2200, fn: () => { hideCallout(); highlight(16, 118, 358, 60); } },
+      { delay: 3000, fn: () => { hideHighlight(); moveCursor(195, 220); } },
+      { delay: 3600, fn: () => { clickCursor(); typeInto("inp-runner", "Argentina"); } },
+      { delay: 5200, fn: () => { moveCursor(195, 305); } },
+      { delay: 5700, fn: () => { clickCursor(); typeInto("inp-scorer", "Messi"); } },
+      { delay: 7000, fn: () => { moveCursor(195, 390); } },
+      { delay: 7500, fn: () => { clickCursor(); typeInto("inp-third", "Espanha"); } },
+      { delay: 8800, fn: () => { showCallout("Prazo para apostas nominais: 05/06 🔒", 130, 460, "top"); } },
+      { delay: 10500, fn: () => { hideCallout(); hideCursor(); } },
+    ]
+  },
+  {
+    label: "5. Classificação",
+    page: "ranking",
+    nav: "ranking",
+    badge: "pago",
+    setup: () => {},
+    steps: [
+      { delay: 400, fn: () => showCallout("Ranking atualizado em tempo real 📊", 130, 130, "bottom") },
+      { delay: 2200, fn: () => { hideCallout(); highlight(16, 112, 358, 54); } },
+      { delay: 3200, fn: () => { hideHighlight(); showCallout("⚡ Exatos = palpitou o placar perfeito!", 80, 178, "bottom"); } },
+      { delay: 4800, fn: () => { hideCallout(); highlight(16, 332, 358, 44); } },
+      { delay: 5800, fn: () => { hideHighlight(); showCallout("Sua posição sempre em destaque 👈", 90, 350, "top"); } },
+      { delay: 7500, fn: () => { hideCallout(); } },
+    ]
+  },
+  {
+    label: "6. Notícias com IA",
+    page: "noticias",
+    nav: "noticias",
+    badge: "pago",
+    setup: () => {},
+    steps: [
+      { delay: 400, fn: () => showCallout("Resumo diário gerado por IA às 08:00 ☀️", 130, 120, "bottom") },
+      { delay: 2400, fn: () => { hideCallout(); highlight(16, 155, 358, 135); } },
+      { delay: 3500, fn: () => { hideHighlight(); showCallout("Toque para expandir e ler o resumo completo", 100, 260, "bottom"); } },
+      { delay: 5200, fn: () => { hideCallout(); } },
+    ]
+  },
+  {
+    label: "7. Status de Pagamento",
+    page: "payment",
+    nav: "apostas",
+    badge: "pendente",
+    setup: () => {
+      document.getElementById("navBadge").textContent = "⚠ Pendente";
+      document.getElementById("navBadge").className = "badge-pendente";
+    },
+    steps: [
+      { delay: 400, fn: () => { highlight(200, 6, 90, 28); showCallout("Badge de pagamento na barra superior", 100, 40, "bottom"); } },
+      { delay: 2800, fn: () => { hideHighlight(); hideCallout(); moveCursor(245, 20); } },
+      { delay: 3400, fn: () => { clickCursor(); showCallout("Clique para ver o QR Code de pagamento", 100, 60, "bottom"); } },
+      { delay: 5000, fn: () => { hideCallout(); hideCursor(); } },
+    ]
+  },
+];
+
+let currentScene = 0;
+let isPlaying = true;
+let stepTimeout = null;
+let sceneTimeout = null;
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById('page-' + id);
+  if (el) el.classList.add('active');
+}
+
+function setNav(id) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (id) {
+    const el = document.getElementById('nav-' + id);
+    if (el) el.classList.add('active');
+  }
+}
+
+function moveCursor(x, y) {
+  const c = document.getElementById('cursor');
+  c.style.display = 'block';
+  c.style.left = x + 'px';
+  c.style.top = y + 'px';
+}
+
+function clickCursor() {
+  const c = document.getElementById('cursor');
+  c.classList.add('clicking');
+  setTimeout(() => c.classList.remove('clicking'), 200);
+}
+
+function hideCursor() {
+  document.getElementById('cursor').style.display = 'none';
+}
+
+function showCallout(text, x, y, dir) {
+  const c = document.getElementById('callout');
+  c.textContent = text;
+  c.style.left = x + 'px';
+  c.style.top = y + 'px';
+  c.className = 'callout ' + dir + ' show';
+}
+
+function hideCallout() {
+  document.getElementById('callout').classList.remove('show');
+}
+
+function highlight(x, y, w, h) {
+  const r = document.getElementById('highlight');
+  r.style.left = x + 'px';
+  r.style.top = (57 + y) + 'px'; // offset by navbar
+  r.style.width = w + 'px';
+  r.style.height = h + 'px';
+  r.classList.add('show');
+}
+
+function hideHighlight() {
+  document.getElementById('highlight').classList.remove('show');
+}
+
+function typeInto(id, text) {
+  const el = document.getElementById(id);
+  el.className = el.className.replace('nominal-input', 'nominal-input filled');
+  let i = 0;
+  const interval = setInterval(() => {
+    el.value = text.slice(0, ++i);
+    if (i >= text.length) clearInterval(interval);
+  }, 80);
+}
+
+function runScene(index) {
+  clearAllTimeouts();
+  if (index < 0) index = 0;
+  if (index >= scenes.length) index = scenes.length - 1;
+  currentScene = index;
+
+  const scene = scenes[index];
+  document.getElementById('sceneLabel').textContent = scene.label;
+  document.getElementById('stepInd').textContent = (index + 1) + ' / ' + scenes.length;
+  document.getElementById('progress').style.width = ((index + 1) / scenes.length * 100) + '%';
+
+  // Reset state
+  hideCursor();
+  hideCallout();
+  hideHighlight();
+
+  // Set badge
+  const badge = document.getElementById('navBadge');
+  if (scene.badge === 'pago') {
+    badge.textContent = '✓ Pago';
+    badge.className = 'badge-pago';
+  } else {
+    badge.textContent = '⚠ Pendente';
+    badge.className = 'badge-pendente';
+  }
+
+  showPage(scene.page);
+  setNav(scene.nav);
+  if (scene.setup) scene.setup();
+
+  if (!isPlaying) return;
+
+  // Run steps
+  let totalDelay = 0;
+  scene.steps.forEach(step => {
+    const t = setTimeout(step.fn, step.delay);
+    sceneTimeout = t;
+  });
+
+  // Auto-advance
+  const lastDelay = scene.steps.length > 0 ? scene.steps[scene.steps.length - 1].delay + 2500 : 3000;
+  sceneTimeout = setTimeout(() => {
+    if (isPlaying && currentScene < scenes.length - 1) {
+      runScene(currentScene + 1);
+    } else if (currentScene === scenes.length - 1) {
+      // loop
+      setTimeout(() => { if (isPlaying) runScene(0); }, 2000);
+    }
+  }, lastDelay);
+}
+
+function clearAllTimeouts() {
+  // Clear by brute force — collect all timeout IDs
+  const highId = setTimeout(() => {}, 0);
+  for (let i = 0; i < highId; i++) clearTimeout(i);
+}
+
+function nextScene() {
+  if (currentScene < scenes.length - 1) runScene(currentScene + 1);
+}
+
+function prevScene() {
+  if (currentScene > 0) runScene(currentScene - 1);
+}
+
+function togglePlay() {
+  isPlaying = !isPlaying;
+  document.getElementById('playBtn').textContent = isPlaying ? '⏸ Pausar' : '▶ Retomar';
+  if (isPlaying) runScene(currentScene);
+}
+
+// Start
+setTimeout(() => runScene(0), 500);
+</script>
+</body>
+</html>

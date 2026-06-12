@@ -1,35 +1,32 @@
-import { getAdminFirestore } from "@/lib/firebase/admin";
+"use client";
+
+import { useState, useEffect } from "react";
+import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase/client";
 import { NewsCard } from "@/components/news-card";
-import { Newspaper } from "lucide-react";
+import { Loader2, Newspaper } from "lucide-react";
 import type { NewsArticle } from "@/types";
-import { Timestamp } from "firebase-admin/firestore";
 
-export const revalidate = 600; // ISR: revalida a cada 10 minutos
+export default function NoticiasPage() {
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [loading, setLoading] = useState(true);
 
-async function getNews(): Promise<NewsArticle[]> {
-  try {
-    const db = getAdminFirestore();
-    const snap = await db
-      .collection("news")
-      .orderBy("date", "desc")
-      .limit(10)
-      .get();
+  useEffect(() => {
+    const q = query(
+      collection(db, "news"),
+      orderBy("date", "desc"),
+      limit(10)
+    );
 
-    return snap.docs.map((d) => {
-      const data = d.data();
-      return {
-        ...data,
-        id: d.id,
-        generatedAt: data.generatedAt as Timestamp,
-      } as unknown as NewsArticle;
+    const unsub = onSnapshot(q, (snap) => {
+      setArticles(
+        snap.docs.map((d) => ({ ...d.data(), id: d.id } as NewsArticle))
+      );
+      setLoading(false);
     });
-  } catch {
-    return [];
-  }
-}
 
-export default async function NoticiasPage() {
-  const articles = await getNews();
+    return unsub;
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -40,16 +37,20 @@ export default async function NoticiasPage() {
         </p>
       </div>
 
-      {articles.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : articles.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-3 py-16 text-muted-foreground">
           <Newspaper className="h-12 w-12 opacity-30" />
           <p>Nenhuma notícia disponível ainda.</p>
-          <p className="text-xs">As notícias são geradas automaticamente todo dia às 23:00 BRT.</p>
+          <p className="text-xs">As notícias são geradas automaticamente todo dia às 08:00 BRT.</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {articles.map((article) => (
-            <NewsCard key={article.id} article={article} />
+          {articles.map((article, i) => (
+            <NewsCard key={article.id} article={article} defaultExpanded={i === 0} />
           ))}
         </div>
       )}

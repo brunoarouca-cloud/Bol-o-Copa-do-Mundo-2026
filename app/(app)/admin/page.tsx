@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Settings, Users, Newspaper, Star, Target } from "lucide-react";
+import { Trophy, Settings, Users, Newspaper, Star, Target, FlaskConical } from "lucide-react";
 
 const adminSections = [
   {
@@ -34,6 +34,12 @@ const adminSections = [
     icon: Newspaper,
     title: "Notícias",
     description: "Gerar e gerenciar notícias diárias",
+  },
+  {
+    href: "/admin/config",
+    icon: FlaskConical,
+    title: "Configurações & Testes",
+    description: "Criar jogos de teste para validar todas as funcionalidades",
   },
 ];
 

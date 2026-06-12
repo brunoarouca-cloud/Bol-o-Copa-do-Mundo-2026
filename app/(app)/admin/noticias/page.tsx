@@ -7,7 +7,7 @@ import { newsConverter } from "@/lib/firebase/converters";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, Newspaper, Trash2 } from "lucide-react";
+import { Loader2, RefreshCw, Newspaper, Trash2, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { NewsArticle } from "@/types";
@@ -39,7 +39,7 @@ export default function AdminNoticiasPage() {
       const token = await auth.currentUser?.getIdToken();
       const url = `/api/generate-news${force ? "?force=1" : ""}`;
       const response = await fetch(url, {
-        headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET ?? ""}` },
+        headers: { Authorization: `Bearer ${token ?? ""}` },
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Erro desconhecido");
@@ -52,6 +52,64 @@ export default function AdminNoticiasPage() {
       toast.error(`Erro: ${(err as Error).message}`);
     } finally {
       setGenerating(false);
+    }
+  }
+
+  async function shareOnWhatsApp(article: NewsArticle) {
+    const dateDisplay = format(
+      new Date(article.date + "T12:00:00"),
+      "dd/MM/yyyy",
+      { locale: ptBR }
+    );
+
+    // Converte markdown para texto WhatsApp
+    const toWhatsApp = (md: string) =>
+      md
+        .replace(/^#{1,3}\s+(.+)$/gm, "*$1*")
+        .replace(/\*\*(.+?)\*\*/g, "*$1*")
+        .replace(/\*(?!\*)(.+?)(?<!\*)\*/g, "_$1_")
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+        .replace(/^\s*[-*]\s+/gm, "• ")
+        .trim();
+
+    const highlights = article.highlights?.length
+      ? "\n\n📌 *Destaques:*\n" + article.highlights.map((h) => `• ${h}`).join("\n")
+      : "";
+
+    const divider = "─────────────────────";
+
+    const text = [
+      "⚽ *BOLÃO COPA DO MUNDO 2026*",
+      `📰 *Notícias do Dia* — ${dateDisplay}`,
+      divider,
+      "",
+      `🏆 *${article.title}*`,
+      "",
+      toWhatsApp(article.content),
+      highlights,
+      "",
+      divider,
+      "🎯 Acesse o bolão e faça suas apostas!",
+    ]
+      .join("\n")
+      .trim();
+
+    // Web Share API (nativa do celular — sem encoding de URL)
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ text });
+        return;
+      } catch {
+        // usuário cancelou ou erro — cai no fallback
+      }
+    }
+
+    // Fallback: copia para a área de transferência
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("Texto copiado! Cole no WhatsApp.");
+    } catch {
+      toast.error("Não foi possível copiar. Tente em um dispositivo móvel.");
     }
   }
 
@@ -77,7 +135,7 @@ export default function AdminNoticiasPage() {
       <div>
         <h1 className="text-xl font-bold">Notícias Diárias</h1>
         <p className="text-sm text-muted-foreground">
-          Geração automática às 23:00 BRT (02:00 UTC) via cron.
+          Geração automática às 08:00 BRT (11:00 UTC) via cron.
         </p>
       </div>
 
@@ -162,20 +220,32 @@ export default function AdminNoticiasPage() {
                       </p>
                     )}
                   </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleDelete(article)}
-                    disabled={deletingId === article.id}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
-                    aria-label={`Excluir "${article.title}"`}
-                  >
-                    {deletingId === article.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </Button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => shareOnWhatsApp(article)}
+                      className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/30"
+                      title="Compartilhar no WhatsApp"
+                      aria-label={`Compartilhar "${article.title}" no WhatsApp`}
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDelete(article)}
+                      disabled={deletingId === article.id}
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      aria-label={`Excluir "${article.title}"`}
+                    >
+                      {deletingId === article.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               );
             })}
