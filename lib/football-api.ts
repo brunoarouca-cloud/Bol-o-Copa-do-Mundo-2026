@@ -103,6 +103,8 @@ const API_ALIASES: Record<string, string> = {
   "czech republic": "Czechia",
   // Bósnia
   "bosnia & herzegovina": "Bosnia and Herzegovina",
+  "bosnia-herzegovina": "Bosnia and Herzegovina",
+  "bosnia and herzegowina": "Bosnia and Herzegovina",
   // Irã
   "iran, islamic republic of": "Iran",
   "iran (islamic republic of)": "Iran",
