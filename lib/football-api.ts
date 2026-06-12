@@ -89,11 +89,16 @@ const API_ALIASES: Record<string, string> = {
   // Coreia
   "south korea": "Korea Republic",
   "korea, republic of": "Korea Republic",
+  "republic of korea": "Korea Republic",
   // Congo
   "dr congo": "Congo DR",
   "democratic republic of congo": "Congo DR",
+  "democratic republic of the congo": "Congo DR",
   "congo, dr": "Congo DR",
   "congo dr": "Congo DR",
+  "drc": "Congo DR",
+  // Cabo Verde
+  "cabo verde": "Cape Verde",
   // Costa do Marfim
   "ivory coast": "Côte d'Ivoire",
   "cote d'ivoire": "Côte d'Ivoire",
